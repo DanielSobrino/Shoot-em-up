@@ -287,7 +287,7 @@ void moveSpr(List<Sprite> sp) {
     final y = i.current.pos.y + i.current.direct.y * inc_step;
     i.current.pos = Point(x,y);
     i.current.direct = Point(x < 0 || x > SCREEN_WIDTH - i.current.frame.width * i.current.scale ? i.current.direct.x * -1 : i.current.direct.x,
-                             y < 0 || y > -80 +SCREEN_HEIGHT - i.current.frame.height * i.current.scale ? i.current.direct.y * -1 : i.current.direct.y);
+                             y < 0 || y > SCREEN_HEIGHT - i.current.frame.height * i.current.scale ? i.current.direct.y * -1 : i.current.direct.y);
     if (i.current.child != null) {
       // movemos los child al igual que su padre
       i.current.child.pos = i.current.pos;

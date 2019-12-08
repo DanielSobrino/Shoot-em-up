@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
-import '../assets/maps/tiles.json.dart';
 import 'tile.dart';
 import 'layer.dart';
 
@@ -11,7 +10,8 @@ class LevelMap {
   int _tileWidth;
   int _tileHeight;
 
-  TileMap _tiles = TileMap(tiles);
+  // TileMap _tiles = TileMap(tiles);
+  TileMap _tiles;
   // List<Map<String,dynamic>> _layerList = [];
   List<dynamic> _layerList = [];
   Map<int,Layer> _layerMap = {};
@@ -47,7 +47,15 @@ class LevelMap {
     return newMap;
   }
 
+  static Future<TileMap> TilesFromFile(String fileName) async {
+    String fileContent = await html.HttpRequest.getString(fileName);
+    Map<String, dynamic> jsonTileMap = jsonDecode(fileContent);
+    final TileMap newTileMap = TileMap(jsonTileMap);
+    return newTileMap;
+  }
+
   Future _loadTiles() async {
+    _tiles = await TilesFromFile('/src/assets/maps/tiles.json');
     List<Future> ltiles = _tiles.tileMap.values.map((v) => v.loadTile()).toList();
     return await Future.wait(ltiles); // esperamos a que termine la carga de tiles
   }

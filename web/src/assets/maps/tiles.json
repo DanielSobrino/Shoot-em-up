@@ -1,4 +1,4 @@
-Map<String, dynamic> tiles = { 
+{ 
  "columns":0,
  "grid":
     {
@@ -327,4 +327,4 @@ Map<String, dynamic> tiles = {
  "tilewidth":48,
  "type":"tileset",
  "version":1.2
-};
+}
