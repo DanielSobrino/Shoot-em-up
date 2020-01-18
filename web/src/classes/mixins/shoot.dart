@@ -26,6 +26,8 @@ mixin Shoot {
       }
     
     }
+    // una vez generados los bullets, los pasamos a waitingSpr de Game
+    // para ser incluidos en el siguiente ciclo de gameloop
     Future.wait(waitComplete).then((e) {
       Game.addWaitingSpr = bullets;
     });

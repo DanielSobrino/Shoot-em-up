@@ -7,6 +7,7 @@ import 'bullet.dart';
 import 'levelMap.dart';
 import 'plane.dart';
 import 'sprite.dart';
+import 'spriteGenerator.dart';
 
 html.CanvasElement _canvas;
 html.CanvasRenderingContext2D _ctx;
@@ -25,6 +26,9 @@ class Game {
 
   int aFrame;
   int fps = 0, fpsTotal = 0;
+
+  // enemigos pendientes durante el nivel
+  // List<SpriteGenerator> _pendingEnemies = [];
 
   Map<int, bool> pressed = {
     html.KeyCode.DOWN: false, html.KeyCode.UP: false, html.KeyCode.LEFT: false, 
@@ -62,18 +66,25 @@ class Game {
     _ctx.imageSmoothingEnabled = false;
     // cargamos el mapa
     levelMap = await LevelMap.FromFile('/src/assets/maps/level1.json');
+    // para generar la cache de imágenes
+    for(Esprites esptype in Esprites.values) {
+      Sprite sp = await loadSprite(esptype);
+      sp.hit(0);
+    }
+    print('fin cache de imagenes');
     //Creación del avión
     player = await loadSprite(Esprites.PLAYER);
     player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 850);
     _spr.add(player);
-    // para generar la cache de imágenes
-    Sprite bullet = await loadSprite(Esprites.BULLET1); bullet.hit(0);
-    Sprite explos = await loadSprite(Esprites.EXPLOSION1); explos.hit(0);
-    enemies.addAll(await createEnemies(10, Esprites.HELICOPTER)); //
-    enemies.addAll(await createEnemies(10, Esprites.BACKW_PLANE)); //
-    enemies.addAll(await createEnemies(6, Esprites.BIROTOR_PLANE)); //
+    player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
+    // enemies.addAll(await createEnemies(5, Esprites.HELICOPTER)); //
+    // enemies.addAll(await createEnemies(5, Esprites.BACKW_PLANE)); //
+    // enemies.addAll(await createEnemies(2, Esprites.BIROTOR_PLANE)); //
+    // enemies.addAll(await createEnemies(3, Esprites.FIGHTER_JET)); //
     // enemies.addAll(await createEnemies(5, Esprites.BASIC_PLANE)); //
-    _spr.addAll(enemies);
+    // _spr.addAll(enemies);
+    // SpriteGenerator(1950, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 5, triggerOffset: -50);
+    SpriteGenerator(1900, Esprites.BACKW_PLANE, Point(100, 0), quantity: 10, triggerOffset: -25);
  
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
@@ -81,6 +92,7 @@ class Game {
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
     mapStart = maxMapPos.toDouble();
+    print(mapStart);
 
     //mostrar fps
     Timer.periodic(Duration(seconds: 1), (t) {fpsTotal = fps; fps = 0;});
@@ -114,6 +126,7 @@ class Game {
       case Esprites.BACKW_PLANE:
       case Esprites.BASIC_PLANE:
       case Esprites.BIROTOR_PLANE:
+      case Esprites.FIGHTER_JET:
         newSpr = Plane.fromType(type);
         break;
       case Esprites.HELICOPTER:
@@ -137,10 +150,12 @@ class Game {
     //Eliminar sprites antes de iterarlos para evitar excepciones
     // spr.removeWhere((d) => d.destroy);
     _spr = _spr.where((d) => !d.destroy).toList();
+    //Comprobar trigger de enemigos y crearlos
+    checkEnemyTrigger();
     //Añadir los sprites pendientes
     _spr.addAll(_waitingSpr);
     _waitingSpr.clear();
-    // enviamos el evento de tick para ser procesado por los sprites
+    //Enviamos el evento de tick para ser procesado por los sprites
     gameTick.sink.add('newTick');
     //Comprobar colisiones
     collisions();
@@ -155,33 +170,47 @@ class Game {
     List<Sprite> bullets = _spr.where((s) => s.type == Esprites.BULLET1).toList();
     List<Sprite> enemies = _spr.where((s) => s.type != Esprites.PLAYER).toList();
     enemies.removeWhere((s) => s.type == Esprites.BULLET1);
-    if(enemies.isEmpty) {
-      endGame = true;
-      winGame = true;
-    }
+    // if(enemies.isEmpty) {
+    //   endGame = true;
+    //   winGame = true && !player.onDestroy; // winGame si player no está en destrucción
+    // }
 
     // comprobamos todas las colisiones de bullets
     for(Sprite enemy in enemies) {
       for(Sprite bullet in bullets) {
-        if(!enemy.onDestroy && enemy.collision(bullet)) {
-          _explode(enemy);
+        if(!enemy.invulnerability && enemy.collision(bullet)) {
+          int pw_left = enemy.power - bullet.power;
+          // print('Ep: ${enemy.power}, Bp: ${bullet.power}');
           bullet.hit(0);
+          _explode(bullet, Esprites.HIT_LIGHT);
+          if(pw_left <= 0) {
+            _explode(enemy, Esprites.EXPLOSION1, destroy: true, destroyInMillis: 300);
+          } else {
+            // mostramos la explosión pequeña sin destruir el sprite
+            //_explode(bullet, Esprites.HIT_LIGHT);
+            enemy.power = pw_left;
+            enemy.setFlicker(); // activamos parpadeo
+          }
         }
       }
       // destrucción del player
-      if(!enemy.onDestroy && enemy.collision(player)) {
-        _explode(enemy);
-        _explode(player);
+      if(!enemy.onDestroy && !player.invulnerability && enemy.collision(player)) {
+        _explode(enemy, Esprites.EXPLOSION1, destroy: true);
+        _explode(player, Esprites.EXPLOSION1, destroy: true);
         Future.delayed(Duration(milliseconds: 800), gameOver);
       }
     }
 
   }
 
-  void _explode(Sprite currSpr) {
-    currSpr.hit(200);
-    // Creamos sprite de explosión
-    loadSprite(Esprites.EXPLOSION1).then((newSpr) {
+  // muestra una explosión exp_type y se asocia a currSpr
+  void _explode(Sprite currSpr, Esprites expl_type, { bool destroy = false, int destroyInMillis }) {
+    // indica si debe destruirse el sprite currSpr o no
+    if( destroy ) {
+      currSpr.hit( destroyInMillis ?? 200);
+    }
+    //   loadSprite(Esprites.EXPLOSION1).then((newSpr) {
+    loadSprite(expl_type).then((newSpr) {
       Point currPos = currSpr.pos;
       double currScale = currSpr.scale;
       currSpr.child = newSpr; // Asignamos la explosión como hijo del sprite
@@ -195,6 +224,20 @@ class Game {
     });
   }
 
+  //Genera nuevos enemigos en base a SpriteGenerator
+  void checkEnemyTrigger() async {
+    if (SpriteGenerator.sprQueue.isEmpty) return;
+    SpriteGenerator currentGen = SpriteGenerator.sprQueue[0];
+    if (currentGen.trigger >= mapStart) {
+      Sprite enemy = await loadSprite(currentGen.spriteType);
+      enemy.pos = currentGen.pos;
+      enemy.direct = Point(0.5, 1); //
+      enemies.add(enemy);
+      _waitingSpr.add(enemy);
+      SpriteGenerator.removeFromQueue(currentGen);
+    }
+  }
+
   void draw() {
     //mapa de fondo
     _ctx.putImageData(levelMap.map_ctx.getImageData(0, mapStart.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT), 0, 0);
@@ -202,7 +245,9 @@ class Game {
     //dibujamos los sprites
     Iterator<Sprite> i = _spr.iterator;
     while(i.moveNext()) {
-      _ctx.drawImageScaled(i.current.frame, i.current.pos.x, i.current.pos.y, i.current.frame.width * i.current.scale, i.current.frame.height * i.current.scale);
+      if (i.current.showSprite) {
+        _ctx.drawImageScaled(i.current.frame, i.current.pos.x, i.current.pos.y, i.current.frame.width * i.current.scale, i.current.frame.height * i.current.scale);
+      }
       if(showHitboxes) {
         i.current.hitBoxes.forEach((hb) {
             _ctx.fillRect(i.current.pos.x + hb.start.x, i.current.pos.y + hb.start.y, hb.end.x - hb.start.x, hb.end.y - hb.start.y);
@@ -250,7 +295,7 @@ class Game {
     if(pressed[html.KeyCode.LEFT] && player.pos.x > 0) { 
       player.pos = Point(player.pos.x - inc_step < 0 ? 0 : player.pos.x - inc_step, player.pos.y);} 
   
-    if(pressed[html.KeyCode.SPACE] &&  currentTime - _lastShotTime > _shotDelay ) {
+    if(pressed[html.KeyCode.SPACE] &&  currentTime - _lastShotTime > _shotDelay && !player.isFlicking ) {
       player.planeShoot();
       _lastShotTime = currentTime;
     }
@@ -287,7 +332,7 @@ void moveSpr(List<Sprite> sp) {
     final y = i.current.pos.y + i.current.direct.y * inc_step;
     i.current.pos = Point(x,y);
     i.current.direct = Point(x < 0 || x > SCREEN_WIDTH - i.current.frame.width * i.current.scale ? i.current.direct.x * -1 : i.current.direct.x,
-                             y < 0 || y > SCREEN_HEIGHT - i.current.frame.height * i.current.scale ? i.current.direct.y * -1 : i.current.direct.y);
+                              y < 0 || y > SCREEN_HEIGHT - i.current.frame.height * i.current.scale ? i.current.direct.y * -1 : i.current.direct.y);
     if (i.current.child != null) {
       // movemos los child al igual que su padre
       i.current.child.pos = i.current.pos;

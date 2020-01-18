@@ -12,6 +12,7 @@ class Sprite {
   int _height;
   double _scale;
   Esprites _type;
+  int _power;
 
   int _frameIndex = 0;
   int _framesNum; // for spritesheets
@@ -24,10 +25,18 @@ class Sprite {
   Point _pos = Point(0,0);
   Point _direct = Point(0,0);
   List<Hitbox> _hitBoxes = [];
-
+  Sprite _child; // sprite hijo asociado
+  // estados del sprite
   bool _destroy = false;
   bool _onDestroy = false; // está destruyéndose
-  Sprite _child; // sprite hijo asociado
+  bool _showSprite = true;  // indica si debe mostrarse el sprite
+  bool _invulnerability = false; // el sprite no recibe impactos
+  bool _isFlicking = false; // está parpadeando
+  // parpadeo
+  final int TICKS_FLICKER_CHANGE = 4;
+  int  _ticks_flicker;
+  bool _flicker = false;    // sprite en modo parpadeo
+  int  _flickerCounter; // contador de ticks hasta TICKS_FLICKER
 
   // nos suscribimos al stream de la clase game
   StreamSubscription<String> _strmSubs;
@@ -44,6 +53,7 @@ class Sprite {
     Map<String, dynamic> spr_type = spriteTypes[type];
     _fileName = spr_type['fileName'];
     _type = type;
+    _power = spr_type['power'] ?? 1;
     _framesNum = spr_type['frames'] ?? 1;
     _scale =  spr_type['scale'] ?? 2.0;
     _frameDuration = spr_type['frameDuration'] ?? 50;
@@ -69,6 +79,10 @@ class Sprite {
   Sprite get child => _child;
   int get framesNum => _framesNum;
   int get ticksCounter => _ticksCounter;
+  int get power => _power;
+  bool get showSprite => _showSprite;
+  bool get invulnerability => _invulnerability;
+  bool get isFlicking => _isFlicking;
 
   // Setters
   set pos(Point p) => this._pos = p;
@@ -78,6 +92,8 @@ class Sprite {
   set child(Sprite c) => this._child = c;
   // referencia a objectos de la clase game
   set strmSubs(Stream strm) {this._strmSubs = strm.listen((strGame) => gameHandler(strGame));}
+  set power(int pw) => this._power = pw;
+  set invulnerability(bool inv) => this._invulnerability = inv;
 
   // Devuelve la promesa de la carga de [_image].
   Future complete() async {
@@ -122,12 +138,37 @@ class Sprite {
     // print('gameHandler: $gameEvent');
     if(gameEvent == 'newTick') {
       _ticksCounter++;
+      // cambio de frame
       if(_ticksCounter >= TICKS_ANIMATE) {
         _ticksCounter = 0;
         animate();
       }
-
+      // control de parpadeo
+      if( _flicker ) {
+        if( _flickerCounter++ <= _ticks_flicker ) {
+          // conmutamos según el contador de cambio
+          _showSprite = _flickerCounter % TICKS_FLICKER_CHANGE == 0 ? !_showSprite: showSprite; 
+        } else {
+          stopFlicker();
+        }
+      }
     }
+  }
+
+  // activar parpadeo
+  void setFlicker({int ticks, bool invulnerable}) {
+    this._ticks_flicker = ticks ?? 20;
+    this._flicker = true;
+    this._invulnerability = invulnerable ?? false;
+    _flickerCounter = 0;
+    this._isFlicking = true;
+  } 
+  // terminar parpadeo
+  void stopFlicker() {
+    _showSprite = true;
+    _flicker = false;
+    _invulnerability = false;
+    this._isFlicking = false;
   }
 
   // Crea una nueva hitbox desde [start] a [end].
@@ -156,6 +197,7 @@ class Sprite {
   void hit(int millis) {
     print('hit: $type');
     _onDestroy = true; // activamos la destrucción
+    _invulnerability = true; // invulnerable mientras está en proceso de destrucción
     // si el delay es 0, destrucción inmediata
     if(millis == 0) {
       doDestroy();
