@@ -5,4 +5,4 @@ const SPRITE_DIR = 'src/assets/sprites/';
 const MAPS_DIR = 'src/assets/maps/';
 
 enum Esprites{PLAYER, BACKW_PLANE, BASIC_PLANE, HELICOPTER, BIROTOR_PLANE, 
-              EXPLOSION1, BULLET1, FIGHTER_JET, HIT_LIGHT}
+              EXPLOSION1, BULLET1, BULLET_ENEM1, FIGHTER_JET, HIT_LIGHT}

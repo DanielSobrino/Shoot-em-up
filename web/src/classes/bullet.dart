@@ -15,8 +15,8 @@ class Bullet extends Sprite {
 
 
   void travel() {
-    int x = pos.x + _direct.x;
-    int y = pos.y + _direct.y;
+    double x = pos.x + _direct.x;
+    double y = pos.y + _direct.y;
     this.pos = Point(x,y);
     // print("$x, $y");
     // Comprobamos si la bala ha salido del canvas para destruirla

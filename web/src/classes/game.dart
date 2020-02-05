@@ -8,6 +8,7 @@ import 'levelMap.dart';
 import 'plane.dart';
 import 'sprite.dart';
 import 'spriteGenerator.dart';
+import 'animations.dart';
 
 html.CanvasElement _canvas;
 html.CanvasRenderingContext2D _ctx;
@@ -72,27 +73,23 @@ class Game {
       sp.hit(0);
     }
     print('fin cache de imagenes');
+    // propiedades para el mapa
+    int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
+    mapStart = maxMapPos.toDouble();
+    print(mapStart);
     //Creación del avión
     player = await loadSprite(Esprites.PLAYER);
-    player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 850);
+    player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
     _spr.add(player);
-    player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    // enemies.addAll(await createEnemies(5, Esprites.HELICOPTER)); //
-    // enemies.addAll(await createEnemies(5, Esprites.BACKW_PLANE)); //
-    // enemies.addAll(await createEnemies(2, Esprites.BIROTOR_PLANE)); //
-    // enemies.addAll(await createEnemies(3, Esprites.FIGHTER_JET)); //
-    // enemies.addAll(await createEnemies(5, Esprites.BASIC_PLANE)); //
-    // _spr.addAll(enemies);
-    // SpriteGenerator(1950, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 5, triggerOffset: -50);
+    await takeOff(player, _ctx, levelMap, mapStart.toInt());
+    
+    // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
+    SpriteGenerator(1950, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 5, triggerOffset: -50);
     SpriteGenerator(1900, Esprites.BACKW_PLANE, Point(100, 0), quantity: 10, triggerOffset: -25);
  
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
     html.window.addEventListener('keyup', (e) => keyUp(e));
-    // propiedades para el mapa
-    int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    mapStart = maxMapPos.toDouble();
-    print(mapStart);
 
     //mostrar fps
     Timer.periodic(Duration(seconds: 1), (t) {fpsTotal = fps; fps = 0;});
@@ -119,6 +116,7 @@ class Game {
     _ctx.fillText(txt, 100, SCREEN_HEIGHT/2);
   }
 
+
   static Future<Sprite> loadSprite(Esprites type, {int frames, double scale, int frameDuration}) async {
     Sprite newSpr;
     switch(type) {
@@ -136,6 +134,9 @@ class Game {
         newSpr = Sprite.fromType(type);
         break;
       case Esprites.BULLET1:
+        newSpr = Bullet.fromType(type);
+        break;
+      case Esprites.BULLET_ENEM1:
         newSpr = Bullet.fromType(type);
         break;
       default: 
@@ -167,9 +168,9 @@ class Game {
 
   // Gestión de colisiones
   void collisions() {
-    List<Sprite> bullets = _spr.where((s) => s.type == Esprites.BULLET1).toList();
+    List<Sprite> bullets = _spr.where((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1).toList();
     List<Sprite> enemies = _spr.where((s) => s.type != Esprites.PLAYER).toList();
-    enemies.removeWhere((s) => s.type == Esprites.BULLET1);
+    enemies.removeWhere((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1);
     // if(enemies.isEmpty) {
     //   endGame = true;
     //   winGame = true && !player.onDestroy; // winGame si player no está en destrucción
@@ -242,7 +243,7 @@ class Game {
     //mapa de fondo
     _ctx.putImageData(levelMap.map_ctx.getImageData(0, mapStart.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT), 0, 0);
 
-    //dibujamos los sprites
+    //dibujar los sprites
     Iterator<Sprite> i = _spr.iterator;
     while(i.moveNext()) {
       if (i.current.showSprite) {
