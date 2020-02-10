@@ -6,10 +6,13 @@ import 'sprite.dart';
 class Bullet extends Sprite {
 
   Point _direct = Point(0,0);
+  bool _playerBullet = false;
 
   //Getters setters
   Point get direct => _direct;
+  bool get playerBullet => _playerBullet;
   set direct(Point d) => _direct = d;
+  set playerBullet(bool pb) => _playerBullet = pb;
 
   Bullet.fromType(Esprites type): super.fromType(type);
 

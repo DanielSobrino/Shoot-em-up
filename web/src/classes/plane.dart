@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'dart:async';
 
 import '../assets/sprites/spriteTypes.dart';
+import '../assets/sprites/shootTypes.dart';
 import '../environment.dart';
 import 'mixins/shoot.dart';
 import 'sprite.dart';
@@ -8,24 +10,64 @@ import 'sprite.dart';
 
 class Plane extends Sprite with Shoot {
 
-  List<Point> _gunPos = [];
+  List<dynamic> _gunPos = [];
+  List<Point> _gunDirection;
   Esprites _bulletType;
+  EshootTypes _shootType;
+  bool _playerBullet; // para marcar si la bala es del jugador
+  int _shootRate; // delay entre disparos
+  int _randomRate; // delay random que se añade entre disparos
+  bool _isCache; //si es del caché no dispara
 
-  Plane(fileName,  type, {int frames, double scale, int frameDuration}): 
+  Plane(fileName,  type, {int frames, double scale, int frameDuration}):
         super(fileName, type, frames:frames, scale:scale, frameDuration:frameDuration);
-  
-  // cargamos las propiedades comunes y el resto
-  Plane.fromType(Esprites type): super.fromType(type) {
+
+  // cargamos las propiedades comunes y específicas
+  Plane.fromType(Esprites type, {bool isCache}): super.fromType(type) {
     Map<String, dynamic> spr_type = spriteTypes[type];
-    _gunPos = spr_type['gunPos'];
-    _bulletType = spr_type['bulletType'];
+    _shootType = spr_type['shootType'];
+    _isCache = isCache ?? false;
+    prepareShoot();
+  }
+  
+  // getters
+  List<dynamic> get gunPos => _gunPos;
+  List<Point> get gunDirection => _gunDirection;
+  Esprites get bulletType => _bulletType;
+  bool get playerBullet => _playerBullet;
+
+  // para poder disparar el plane debe estar completo
+  void prepareShoot() {
+    // sólo se asignan las propiedades si existe shootType
+    if(_shootType != null && !_isCache) {
+      this.complete().then((e) {
+        Map<String, dynamic> shoot_type = shootTypes[_shootType];
+        _gunPos = shoot_type['gunPos'];
+        _bulletType = shoot_type['bulletType'];
+        _gunDirection = shoot_type['direction'];
+        _shootRate = shoot_type['shootRate'];
+        _randomRate = shoot_type['randomRate'] ?? 0;
+        _playerBullet = shoot_type['playerBullet'] ?? false;
+        // una vez leidas las propiedades, se genera el timer para los disparos automáticos
+        if (_shootRate != null) {
+          loopShoot();
+        }
+      });
+    }
   }
 
-  // getters
-  List<Point> get gunPos => _gunPos;
-  Esprites get bulletType => _bulletType;
+  void loopShoot() async {
+    int shotDelay = _shootRate + Random().nextInt(_randomRate);
+    await Future.delayed(Duration(milliseconds: shotDelay));
+    if(!this.onDestroy) {
+      planeShoot();
+      loopShoot();
+    }
+  
+  }
 
   // para llamar al shoot del mixin pasándole el plane
   void planeShoot() => shoot(this);
 
+  
 }

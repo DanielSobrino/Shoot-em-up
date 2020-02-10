@@ -69,7 +69,7 @@ class Game {
     levelMap = await LevelMap.FromFile('/src/assets/maps/level1.json');
     // para generar la cache de imágenes
     for(Esprites esptype in Esprites.values) {
-      Sprite sp = await loadSprite(esptype);
+      Sprite sp = await loadSprite(esptype, isCache: true);
       sp.hit(0);
     }
     print('fin cache de imagenes');
@@ -84,8 +84,9 @@ class Game {
     await takeOff(player, _ctx, levelMap, mapStart.toInt());
     
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    SpriteGenerator(1950, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 5, triggerOffset: -50);
-    SpriteGenerator(1900, Esprites.BACKW_PLANE, Point(100, 0), quantity: 10, triggerOffset: -25);
+    SpriteGenerator(1950, Esprites.BACKW_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
+    SpriteGenerator(1900, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 2, triggerOffset: -50);
+    SpriteGenerator(1800, Esprites.BASIC_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
  
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
@@ -103,7 +104,8 @@ class Game {
       aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
     } else {
       gameTick.sink.close(); // paramos el streamController
-      String txt = winGame ? 'U win! :D' : 'U lost. lol';
+      _spr.forEach((s) => s.hit(0)); // eliminamos todos los Sprites
+      String txt = winGame ? 'U win! :D' : 'Has morío';
       showText(txt);
     }
   }
@@ -117,7 +119,7 @@ class Game {
   }
 
 
-  static Future<Sprite> loadSprite(Esprites type, {int frames, double scale, int frameDuration}) async {
+  static Future<Sprite> loadSprite(Esprites type, {int frames, double scale, int frameDuration, bool isCache}) async {
     Sprite newSpr;
     switch(type) {
       case Esprites.PLAYER:
@@ -125,10 +127,8 @@ class Game {
       case Esprites.BASIC_PLANE:
       case Esprites.BIROTOR_PLANE:
       case Esprites.FIGHTER_JET:
-        newSpr = Plane.fromType(type);
-        break;
       case Esprites.HELICOPTER:
-        newSpr = Sprite.fromType(type);
+        newSpr = Plane.fromType(type, isCache: isCache);
         break;
       case Esprites.EXPLOSION1:
         newSpr = Sprite.fromType(type);
@@ -168,17 +168,21 @@ class Game {
 
   // Gestión de colisiones
   void collisions() {
-    List<Sprite> bullets = _spr.where((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1).toList();
-    List<Sprite> enemies = _spr.where((s) => s.type != Esprites.PLAYER).toList();
-    enemies.removeWhere((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1);
+    // listas para los bullets
+    List<Sprite> player_bullets = _spr.where((s) => s is Bullet && s.playerBullet).toList();
+    List<Sprite> enemy_bullets = _spr.where((s) => s is Bullet && !s.playerBullet).toList();
+    // lista enemigos, debe ser Plane y no ser el Player
+    List<Sprite> enemies = _spr.where((s) => s.type != Esprites.PLAYER && s is Plane).toList();
+    // enemies.removeWhere((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1);
+    
     // if(enemies.isEmpty) {
     //   endGame = true;
     //   winGame = true && !player.onDestroy; // winGame si player no está en destrucción
     // }
 
-    // comprobamos todas las colisiones de bullets
+    // comprobamos las colisiones de bullets del player y la colisión del player con otro enemigo
     for(Sprite enemy in enemies) {
-      for(Sprite bullet in bullets) {
+      for(Sprite bullet in player_bullets) {
         if(!enemy.invulnerability && enemy.collision(bullet)) {
           int pw_left = enemy.power - bullet.power;
           // print('Ep: ${enemy.power}, Bp: ${bullet.power}');
@@ -201,6 +205,17 @@ class Game {
         Future.delayed(Duration(milliseconds: 800), gameOver);
       }
     }
+
+    // comprobamos si el player choca con una bala enemiga
+    for (Bullet bullet in enemy_bullets) {
+      if (!player.invulnerability && player.collision(bullet)) {
+        bullet.hit(0);
+        _explode(bullet, Esprites.HIT_LIGHT);
+        _explode(player, Esprites.EXPLOSION1, destroy: true);
+        Future.delayed(Duration(milliseconds: 800), gameOver);
+      }
+    }
+
 
   }
 
@@ -296,7 +311,7 @@ class Game {
     if(pressed[html.KeyCode.LEFT] && player.pos.x > 0) { 
       player.pos = Point(player.pos.x - inc_step < 0 ? 0 : player.pos.x - inc_step, player.pos.y);} 
   
-    if(pressed[html.KeyCode.SPACE] &&  currentTime - _lastShotTime > _shotDelay && !player.isFlicking ) {
+    if(pressed[html.KeyCode.SPACE] &&  currentTime - _lastShotTime > _shotDelay && !player.isFlicking && !player.onDestroy) {
       player.planeShoot();
       _lastShotTime = currentTime;
     }

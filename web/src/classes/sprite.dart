@@ -53,7 +53,7 @@ class Sprite {
     Map<String, dynamic> spr_type = spriteTypes[type];
     _fileName = spr_type['fileName'];
     _type = type;
-    _power = spr_type['power'] ?? 1;
+    _power = spr_type['power'] ?? 2;
     _framesNum = spr_type['frames'] ?? 1;
     _scale =  spr_type['scale'] ?? 2.0;
     _frameDuration = spr_type['frameDuration'] ?? 50;
@@ -195,7 +195,7 @@ class Sprite {
   }
 
   void hit(int millis) {
-    print('hit: $type');
+    // print('hit: $type');
     _onDestroy = true; // activamos la destrucción
     _invulnerability = true; // invulnerable mientras está en proceso de destrucción
     // si el delay es 0, destrucción inmediata

@@ -2,22 +2,17 @@ import 'dart:math';
 import '../../environment.dart';
 
 Map<Esprites, Map<String, dynamic>> spriteTypes = {
-  
+  // AVIONES -----------------------------------------------
   Esprites.PLAYER: {
     "fileName": "player.png",
     "frames": 1,
     "hitboxes": [
-      [15,1,19,30],
-      [1,11,33,16],
-      [10,18,24,24],
-      [8,25,26,29]
+      [14,1,18,30],
+      [0,11,32,16],
+      [9,17,23,23],
+      [7,24,25,28]
     ],
-    // mover un px a la izquierda en gimp
-    "gunPos": [
-      Point(3,8),
-      Point(27,8)
-    ],
-    "bulletType": Esprites.BULLET1
+    "shootType": EshootTypes.PLAYER
   },
 
   Esprites.BASIC_PLANE: {
@@ -29,6 +24,11 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [12,2,20,28],
       [2,5,30,13]
     ],
+    "gunPos": [
+      Point(15,2)
+    ],
+    "shootType": EshootTypes.BASIC
+
   },
 
   Esprites.BACKW_PLANE: {
@@ -40,6 +40,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [12,2,20,28],
       [2,5,30,13]
     ],
+    "shootType": EshootTypes.BASIC
   },
 
   Esprites.HELICOPTER: {
@@ -51,7 +52,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [15,2,20,33],
       [8,11,27,15]
     ],
-    "power": 2
+    "power": 3
   },
 
   Esprites.BIROTOR_PLANE: {
@@ -64,7 +65,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [11,4,37,39],
       [21,0,27,4]
     ],
-    "power": 5
+    "power": 5,
+    "shootType": EshootTypes.TRIPLE
   },
 
   Esprites.FIGHTER_JET: {
@@ -79,7 +81,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [14,1,17,7]
     ]
   },
-
+  // EFECTOS -----------------------------------------------
   Esprites.EXPLOSION1: {
     "fileName": "explosion1_spritesheet.png",
     "frames": 6,
@@ -94,14 +96,15 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "scale": 1.5,
     "hitboxes": []
   },
-
+  // BALAS -----------------------------------------------
   Esprites.BULLET1: {
     "fileName": "bullet1_spritesheet.png",
     "frames": 2,
     "frameDuration": 100,
     "hitboxes": [
       [0,1,3,5]
-    ]
+    ],
+    "power": 1
   },
 
   Esprites.BULLET_ENEM1: {
@@ -111,7 +114,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "frameDuration": 100,
     "hitboxes": [
       [0,0,9,9]
-    ]
+    ],
+    "power": 1
   }
 
 };
