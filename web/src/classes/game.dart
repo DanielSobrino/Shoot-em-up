@@ -5,6 +5,7 @@ import 'dart:math';
 import '../../src/environment.dart';
 import 'bullet.dart';
 import 'levelMap.dart';
+import 'movement.dart';
 import 'plane.dart';
 import 'sprite.dart';
 import 'spriteGenerator.dart';
@@ -51,7 +52,7 @@ class Game {
   bool showHitboxes = false;
   bool pause = false;
   // posiciones mapa
-  double mapStart = 0; //posición desde donde se va a dibujar
+  double mapPos = 0; //posición desde donde se va a dibujar
   double mapStep  = 0.6; //pixels verticales a desplazar
 
   Game() {
@@ -75,18 +76,21 @@ class Game {
     print('fin cache de imagenes');
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    mapStart = maxMapPos.toDouble();
-    print(mapStart);
+    mapPos = maxMapPos.toDouble();
+    print(mapPos);
     //Creación del avión
     player = await loadSprite(Esprites.PLAYER);
     player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
     _spr.add(player);
-    await takeOff(player, _ctx, levelMap, mapStart.toInt());
+    // await takeOff(player, _ctx, levelMap, mapPos.toInt());
     
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    SpriteGenerator(1950, Esprites.BACKW_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
-    SpriteGenerator(1900, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 2, triggerOffset: -50);
-    SpriteGenerator(1800, Esprites.BASIC_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
+    // SpriteGenerator(1950, Esprites.BACKW_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
+    // SpriteGenerator(1900, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 2, triggerOffset: -50);
+    // SpriteGenerator(1800, Esprites.BASIC_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
+    SpriteGenerator(1700, Esprites.BASIC_PLANE, Point(180, -50), quantity: 5, triggerOffset: -50, movement: Movement(1000, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
+    SpriteGenerator(1500, Esprites.BIROTOR_PLANE, Point(60, -50), quantity: 2, triggerOffset: -150, movement: Movement(1000, type: EmoveTypes.LINEAR, desp_y: 0.8));
+    SpriteGenerator(1400, Esprites.BACKW_PLANE, Point(250, -50), quantity: 4, triggerOffset: -50, movement: Movement(1000, type: EmoveTypes.ZIGZAG, max_x: 60));
  
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
@@ -161,9 +165,9 @@ class Game {
     //Comprobar colisiones
     collisions();
     //actualizar posición mapa
-    mapStart = mapStart > mapStep ? mapStart - mapStep : 0;
+    mapPos = mapPos > mapStep ? mapPos - mapStep : 0;
     //rebote sprites
-    moveSpr(enemies);
+    // moveSpr(enemies);
   }
 
   // Gestión de colisiones
@@ -216,7 +220,21 @@ class Game {
       }
     }
 
+  }
 
+  //Genera nuevos enemigos en base a SpriteGenerator
+  void checkEnemyTrigger() async {
+    if (SpriteGenerator.sprQueue.isEmpty) return;
+    SpriteGenerator currentGen = SpriteGenerator.sprQueue[0];
+    if (currentGen.trigger >= mapPos) {
+      Sprite enemy = await loadSprite(currentGen.spriteType);
+      enemy.pos = currentGen.pos;
+      // enemy.direct = Point(0.5, 1); //
+      enemies.add(enemy);
+      _waitingSpr.add(enemy);
+      currentGen.movement.startMove(enemy);
+      SpriteGenerator.removeFromQueue(currentGen);
+    }
   }
 
   // muestra una explosión exp_type y se asocia a currSpr
@@ -240,23 +258,9 @@ class Game {
     });
   }
 
-  //Genera nuevos enemigos en base a SpriteGenerator
-  void checkEnemyTrigger() async {
-    if (SpriteGenerator.sprQueue.isEmpty) return;
-    SpriteGenerator currentGen = SpriteGenerator.sprQueue[0];
-    if (currentGen.trigger >= mapStart) {
-      Sprite enemy = await loadSprite(currentGen.spriteType);
-      enemy.pos = currentGen.pos;
-      enemy.direct = Point(0.5, 1); //
-      enemies.add(enemy);
-      _waitingSpr.add(enemy);
-      SpriteGenerator.removeFromQueue(currentGen);
-    }
-  }
-
   void draw() {
     //mapa de fondo
-    _ctx.putImageData(levelMap.map_ctx.getImageData(0, mapStart.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT), 0, 0);
+    _ctx.putImageData(levelMap.map_ctx.getImageData(0, mapPos.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT), 0, 0);
 
     //dibujar los sprites
     Iterator<Sprite> i = _spr.iterator;

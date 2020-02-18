@@ -5,12 +5,14 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   // AVIONES -----------------------------------------------
   Esprites.PLAYER: {
     "fileName": "player.png",
+    "scale": 1,
     "frames": 1,
     "hitboxes": [
-      [14,1,18,30],
-      [0,11,32,16],
-      [9,17,23,23],
-      [7,24,25,28]
+      [29,1,35,58],
+      [18,16,46,22],
+      [0,22,64,31],
+      [20,33,44,48],
+      [13,51,51,58]
     ],
     "shootType": EshootTypes.PLAYER
   },
@@ -110,7 +112,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   Esprites.BULLET_ENEM1: {
     "fileName": "bullet_enem_spritesheet.png",
     "frames": 2,
-    "scale": 1.5,
+    "scale": 1,
     "frameDuration": 100,
     "hitboxes": [
       [0,0,9,9]

@@ -10,8 +10,8 @@ Map<EshootTypes, Map<String, dynamic>> shootTypes = {
     ],
     // mover un px a la izquierda en gimp
     "gunPos": [
-      Point(3,8),
-      Point(27,8)
+      Point(8,21),
+      Point(54,21)
     ],
     "shootRate": null,
     "playerBullet": true

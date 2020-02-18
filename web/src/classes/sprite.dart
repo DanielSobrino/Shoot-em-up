@@ -195,7 +195,7 @@ class Sprite {
   }
 
   void hit(int millis) {
-    // print('hit: $type');
+    print('hit: $type');
     _onDestroy = true; // activamos la destrucción
     _invulnerability = true; // invulnerable mientras está en proceso de destrucción
     // si el delay es 0, destrucción inmediata
