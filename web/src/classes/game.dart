@@ -46,14 +46,16 @@ class Game {
   //setter para añadir sprites en espera
   static set addWaitingSpr(List<Sprite> sp) => _waitingSpr.addAll(sp);
   // stream para control del timing
-  static StreamController gameTick = StreamController<String>.broadcast();
+  static StreamController _gameTick = StreamController<String>.broadcast();
+  // static get gameTick => _gameTick.stream;
 
   //---DEBUG---
   bool showHitboxes = false;
   bool pause = false;
   // posiciones mapa
-  double mapPos = 0; //posición desde donde se va a dibujar
-  double mapStep  = 0.6; //pixels verticales a desplazar
+  static double _mapPos = 0; //posición desde donde se va a dibujar
+  double _mapStep  = 0.6; //pixels verticales a desplazar
+  static get mapPos => _mapPos;
 
   Game() {
     init().then((resp) {
@@ -76,8 +78,8 @@ class Game {
     print('fin cache de imagenes');
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    mapPos = maxMapPos.toDouble();
-    print(mapPos);
+    _mapPos = maxMapPos.toDouble();
+    print(_mapPos);
     //Creación del avión
     player = await loadSprite(Esprites.PLAYER);
     player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
@@ -85,12 +87,10 @@ class Game {
     // await takeOff(player, _ctx, levelMap, mapPos.toInt());
     
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    // SpriteGenerator(1950, Esprites.BACKW_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
-    // SpriteGenerator(1900, Esprites.BIROTOR_PLANE, Point(player.pos.x, 0), quantity: 2, triggerOffset: -50);
-    // SpriteGenerator(1800, Esprites.BASIC_PLANE, Point(100, 0), quantity: 5, triggerOffset: -25);
-    SpriteGenerator(1700, Esprites.BASIC_PLANE, Point(180, -50), quantity: 5, triggerOffset: -50, movement: Movement(1000, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
-    SpriteGenerator(1500, Esprites.BIROTOR_PLANE, Point(60, -50), quantity: 2, triggerOffset: -150, movement: Movement(1000, type: EmoveTypes.LINEAR, desp_y: 0.8));
-    SpriteGenerator(1400, Esprites.BACKW_PLANE, Point(250, -50), quantity: 4, triggerOffset: -50, movement: Movement(1000, type: EmoveTypes.ZIGZAG, max_x: 60));
+    // SpriteGenerator(1950, Esprites.PLAYER_F, Point(100, 0), quantity: 1, triggerOffset: -50);
+    SpriteGenerator(1950, Esprites.BASIC_PLANE, Point(180, -50), quantity: 5, triggerOffset: -50, movement: Movement(1000, desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
+    // SpriteGenerator(1500, Esprites.BIROTOR_PLANE, Point(60, -50), quantity: 2, triggerOffset: -150, movement: Movement(1000, type: EmoveTypes.LINEAR, desp_y: 0.8));
+    // SpriteGenerator(1400, Esprites.BACKW_PLANE, Point(250, -50), quantity: 4, triggerOffset: -50, movement: Movement(1000, type: EmoveTypes.ZIGZAG, max_x: 60));
  
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
@@ -101,13 +101,14 @@ class Game {
   }
 
   void gameLoop(num f) {
+    // if(pause) return;
     if(!endGame) {
       kybControl();
-      updateState();
+      if(!pause) updateState();
       draw();
       aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
     } else {
-      gameTick.sink.close(); // paramos el streamController
+      _gameTick.sink.close(); // paramos el streamController
       _spr.forEach((s) => s.hit(0)); // eliminamos todos los Sprites
       String txt = winGame ? 'U win! :D' : 'Has morío';
       showText(txt);
@@ -127,11 +128,16 @@ class Game {
     Sprite newSpr;
     switch(type) {
       case Esprites.PLAYER:
+      case Esprites.PLAYER_F:
       case Esprites.BACKW_PLANE:
+      case Esprites.BACKW_PLANE_F:
       case Esprites.BASIC_PLANE:
+      case Esprites.BASIC_PLANE_F:
       case Esprites.BIROTOR_PLANE:
+      case Esprites.BIROTOR_PLANE_F:
       case Esprites.FIGHTER_JET:
       case Esprites.HELICOPTER:
+      case Esprites.HELICOPTER_F:
         newSpr = Plane.fromType(type, isCache: isCache);
         break;
       case Esprites.EXPLOSION1:
@@ -146,14 +152,13 @@ class Game {
       default: 
         newSpr = Sprite.fromType(type);
     }
-    newSpr.strmSubs = Game.gameTick.stream;
+    newSpr.strmSubs = _gameTick.stream;
     await newSpr.complete();
     return newSpr;
   }
 
   void updateState() {
     //Eliminar sprites antes de iterarlos para evitar excepciones
-    // spr.removeWhere((d) => d.destroy);
     _spr = _spr.where((d) => !d.destroy).toList();
     //Comprobar trigger de enemigos y crearlos
     checkEnemyTrigger();
@@ -161,11 +166,11 @@ class Game {
     _spr.addAll(_waitingSpr);
     _waitingSpr.clear();
     //Enviamos el evento de tick para ser procesado por los sprites
-    gameTick.sink.add('newTick');
+    _gameTick.sink.add('newTick');
     //Comprobar colisiones
     collisions();
     //actualizar posición mapa
-    mapPos = mapPos > mapStep ? mapPos - mapStep : 0;
+    _mapPos = _mapPos > _mapStep ? _mapPos - _mapStep : 0;
     //rebote sprites
     // moveSpr(enemies);
   }
@@ -226,13 +231,16 @@ class Game {
   void checkEnemyTrigger() async {
     if (SpriteGenerator.sprQueue.isEmpty) return;
     SpriteGenerator currentGen = SpriteGenerator.sprQueue[0];
-    if (currentGen.trigger >= mapPos) {
+    if (currentGen.trigger >= _mapPos) {
       Sprite enemy = await loadSprite(currentGen.spriteType);
       enemy.pos = currentGen.pos;
       // enemy.direct = Point(0.5, 1); //
       enemies.add(enemy);
       _waitingSpr.add(enemy);
-      currentGen.movement.startMove(enemy);
+      if (currentGen.movement != null) {
+        currentGen.movement.startMove(enemy);
+        currentGen.movement.strmSubs = _gameTick.stream; // lo añadimos al stream de game
+      }
       SpriteGenerator.removeFromQueue(currentGen);
     }
   }
@@ -241,7 +249,7 @@ class Game {
   void _explode(Sprite currSpr, Esprites expl_type, { bool destroy = false, int destroyInMillis }) {
     // indica si debe destruirse el sprite currSpr o no
     if( destroy ) {
-      currSpr.hit( destroyInMillis ?? 200);
+      currSpr.hit( destroyInMillis ?? PLANE_DESTROY_DELAY);
     }
     //   loadSprite(Esprites.EXPLOSION1).then((newSpr) {
     loadSprite(expl_type).then((newSpr) {
@@ -260,7 +268,7 @@ class Game {
 
   void draw() {
     //mapa de fondo
-    _ctx.putImageData(levelMap.map_ctx.getImageData(0, mapPos.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT), 0, 0);
+    _ctx.putImageData(levelMap.map_ctx.getImageData(0, _mapPos.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT), 0, 0);
 
     //dibujar los sprites
     Iterator<Sprite> i = _spr.iterator;
@@ -287,21 +295,31 @@ class Game {
   //---KEYBOARD---
   void keyDown(html.KeyboardEvent e) {
     // e.preventDefault();
-    if(e.keyCode == html.KeyCode.P) {
-      if(pause) {
-        print('resume');
-        aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
-      } else {
-        print('pausa');
-        html.window.cancelAnimationFrame(aFrame);
-      }
-      pause = !pause;
-      return;
+    switch (e.keyCode) {
+      case html.KeyCode.P:
+        if(pause) {
+          print('resume');
+          _gameTick.sink.add('pauseOff');
+          // aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
+        } else {
+          print('pausa');
+          _gameTick.sink.add('pauseOn');
+          // html.window.cancelAnimationFrame(aFrame);
+        }
+        pause = !pause;
+        break;
+      case html.KeyCode.H:
+        this.showHitboxes = !this.showHitboxes;
+        break;
+      case html.KeyCode.DOWN:
+      case html.KeyCode.UP:
+      case html.KeyCode.LEFT:
+      case html.KeyCode.RIGHT:
+      case html.KeyCode.SPACE:
+        pressed[e.keyCode] = true;
+        break;
     }
-    if (e.keyCode == html.KeyCode.DOWN || e.keyCode == html.KeyCode.UP || e.keyCode == html.KeyCode.LEFT || 
-        e.keyCode == html.KeyCode.RIGHT || e.keyCode == html.KeyCode.SPACE) {
-      pressed[e.keyCode] = true;
-    }
+
   }
 
   void kybControl() {

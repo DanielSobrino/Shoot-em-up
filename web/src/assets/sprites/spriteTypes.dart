@@ -16,6 +16,20 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     ],
     "shootType": EshootTypes.PLAYER
   },
+  Esprites.PLAYER_F: { 
+    //para las hitbox flipped, coger el máximo de height, y restarle el número anterior. (a los pares) Y menor a mayor
+    "fileName": "player_flipped.png",
+    "scale": 1,
+    "frames": 1,
+    "hitboxes": [
+      [29,0,35,57],
+      [18,36,46,42],
+      [0,27,64,36],
+      [20,10,44,25],
+      [13,0,51,7]
+    ],
+    "shootType": EshootTypes.PLAYER
+  },
 
   Esprites.BASIC_PLANE: {
     "fileName": "plane1_spritesheet.png",
@@ -25,6 +39,21 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "hitboxes": [
       [12,2,20,28],
       [2,5,30,13]
+    ],
+    "gunPos": [
+      Point(15,2)
+    ],
+    "shootType": EshootTypes.BASIC
+
+  },
+  Esprites.BASIC_PLANE_F: {
+    "fileName": "plane1_flipped_spritesheet.png",
+    "frames": 4,
+    "scale": 1.5,
+    "frameDuration": 50,
+    "hitboxes": [
+      [12,1,20,27],
+      [2,16,30,24]
     ],
     "gunPos": [
       Point(15,2)
@@ -45,6 +74,18 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "shootType": EshootTypes.BASIC
   },
 
+  Esprites.BACKW_PLANE_F: {
+    "fileName": "plane_turret_flipped_spritesheet.png",
+    "frames": 4,
+    "scale": 1.5,
+    "frameDuration": 50,
+    "hitboxes": [
+      [12,1,20,27],
+      [2,16,30,24]
+    ],
+    "shootType": EshootTypes.BASIC
+  },
+
   Esprites.HELICOPTER: {
     "fileName": "helicopter_spritesheet.png",
     "frames": 5,
@@ -53,6 +94,18 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "hitboxes": [
       [15,2,20,33],
       [8,11,27,15]
+    ],
+    "power": 3
+  },
+
+  Esprites.HELICOPTER_F: {
+    "fileName": "helicopter_flipped_spritesheet.png",
+    "frames": 5,
+    "scale": 1.5,
+    "frameDuration": 30,
+    "hitboxes": [
+      [15,2,20,33],
+      [8,20,27,24]
     ],
     "power": 3
   },
@@ -70,6 +123,19 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "power": 5,
     "shootType": EshootTypes.TRIPLE
   },
+  Esprites.BIROTOR_PLANE_F: {
+    "fileName": "birotor_plane_flipped_spritesheet.png",
+    "frames": 4,
+    "scale": 1.5,
+    "frameDuration": 50,
+    "hitboxes": [
+      [2,25,46,33],
+      [11,1,37,36],
+      [21,36,27,40]
+    ],
+    "power": 5,
+    "shootType": EshootTypes.TRIPLE
+  },
 
   Esprites.FIGHTER_JET: {
     "fileName": "fighter_jet_spritesheet.png",
@@ -83,6 +149,18 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [14,1,17,7]
     ]
   },
+  // Esprites.FIGHTER_JET_F: {
+  //   "fileName": "fighter_jet_flipped_spritesheet.png",
+  //   "frames": 2,
+  //   "scale": 1.5,
+  //   "frameDuration": 50,
+  //   "hitboxes": [
+  //     [0,16,31,22],
+  //     [6,5,25,9],
+  //     [11,9,20,29],
+  //     [14,29,17,35]
+  //   ]
+  // },
   // EFECTOS -----------------------------------------------
   Esprites.EXPLOSION1: {
     "fileName": "explosion1_spritesheet.png",

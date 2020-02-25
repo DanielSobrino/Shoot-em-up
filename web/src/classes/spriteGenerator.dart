@@ -27,7 +27,8 @@ class SpriteGenerator {
     // ahora creamos todos los elementos de la lista
     while( --this._quantity > 0 ) {
       int newTrigger = _trigger + _triggerOffset * _quantity;
-      SpriteGenerator(newTrigger, this._spriteType, this._pos, movement: Movement.clone(this._movement));
+      Movement tmp_mv = movement == null ? null : Movement.clone(this._movement);
+      SpriteGenerator(newTrigger, this._spriteType, this._pos, movement: tmp_mv);
     }
     // ordenar la lista según valor de trigger
     _sprQueue.sort((a, b) => b._trigger.compareTo(a.trigger));

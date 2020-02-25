@@ -18,6 +18,7 @@ class Plane extends Sprite with Shoot {
   int _shootRate; // delay entre disparos
   int _randomRate; // delay random que se añade entre disparos
   bool _isCache; //si es del caché no dispara
+  bool _gamePaused = false; // captura la pausa de game
 
   Plane(fileName,  type, {int frames, double scale, int frameDuration}):
         super(fileName, type, frames:frames, scale:scale, frameDuration:frameDuration);
@@ -60,7 +61,9 @@ class Plane extends Sprite with Shoot {
     int shotDelay = _shootRate + Random().nextInt(_randomRate);
     await Future.delayed(Duration(milliseconds: shotDelay));
     if(!this.onDestroy) {
-      planeShoot();
+      if(!_gamePaused) {
+        planeShoot();
+      }
       loopShoot();
     }
   
@@ -68,6 +71,21 @@ class Plane extends Sprite with Shoot {
 
   // para llamar al shoot del mixin pasándole el plane
   void planeShoot() => shoot(this);
+
+  @override
+  void gameHandler(String gameEvent) {
+    super.gameHandler(gameEvent);
+
+    if(gameEvent == "pauseOn") {
+      print('activada la pausa en plane');
+      this._gamePaused = true;
+    }
+    if(gameEvent == "pauseOff") {
+      print('desactivada la pausa en plane');
+      this._gamePaused = false;
+    }
+    
+  }
 
   
 }

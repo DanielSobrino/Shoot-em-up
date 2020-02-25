@@ -18,11 +18,18 @@ class Movement {
   int sin_x_offset;
   double sin_ampl; // amplitud de onda
   double sin_res;  // a menor valor, mayor resolución
-  final double sin_arc = 2 * pi;
-
+  final double SIN_ARC = 2 * pi;
   EmoveTypes type;
+
   StreamController<Point> strCtrl = StreamController();
   StreamSubscription strmSub;
+  bool _gamePaused = false; // captura la pausa de game
+  // nos suscribimos al stream de la clase game
+  StreamSubscription<String> _gameStrmSub;
+
+  // setters
+  // referencia a objectos de la clase game
+  set strmSubs(Stream strm) {this._gameStrmSub = strm.listen((strGame) => gameHandler(strGame));}
 
   Movement(int max_y, { EmoveTypes type, double desp_x, double desp_y, double sin_ampl, double sin_res, int max_x }) {
     // inicializar posición fuera de la pantalla
@@ -47,7 +54,7 @@ class Movement {
     }
     // al terminar la secuencia, cerramos el stream 
     await strCtrl.sink.close();
-    sp.hit(0); // programa destrucción del objeto
+    sp.hit(PLANE_DESTROY_DELAY); // programa destrucción del objeto
   }
 
   // para arrancar el proceso de generación y quedar a la escucha
@@ -65,11 +72,13 @@ class Movement {
     strmSub.onDone(() {
       print('-- alcanzado onDone --');
       strmSub.cancel();
+      _gameStrmSub.cancel();
     });
   }
 
   // calcula la siguiente posición del objeto
   bool nextPos( EmoveTypes movType ) {
+    if (_gamePaused) return true;
     double new_x, new_y;
     // desplazamiento Y en base al offset
     new_y = this.pos.y + desp_y;
@@ -87,16 +96,25 @@ class Movement {
           }
           break;
       case EmoveTypes.WAVE:
-          counter = counter > sin_arc ? 0: counter + sin_res;
+          counter = counter > SIN_ARC ? 0: counter + sin_res;
           new_x = this.sin_x_offset + sin(counter) * sin_ampl;
           break;
     }
     // print('nuevo_y: ${nuevo_y * direcc_y} - max_y:${max_y * direcc_y}');
     // comparación dependiendo de la dirección
-    if( (new_y * direct_y) <= (this.max_y * direct_y) ) {
+    if( (new_y * direct_y) <= (this.max_y * direct_y) && !sp.onDestroy ) {
       strCtrl.sink.add(Point(new_x, new_y));
       return true;
     }
     return false;
+  }
+
+  void gameHandler(String gameEvent) {
+    if (gameEvent == "pauseOn") {
+      _gamePaused = true;
+    }
+    if (gameEvent == "pauseOff") {
+      _gamePaused = false;
+    }
   }
 }

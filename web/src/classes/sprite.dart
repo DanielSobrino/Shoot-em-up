@@ -90,10 +90,10 @@ class Sprite {
   set scale(double s) => this._scale = s;
   set frameDuration(int d) => this._frameDuration = d;
   set child(Sprite c) => this._child = c;
-  // referencia a objectos de la clase game
-  set strmSubs(Stream strm) {this._strmSubs = strm.listen((strGame) => gameHandler(strGame));}
   set power(int pw) => this._power = pw;
   set invulnerability(bool inv) => this._invulnerability = inv;
+  // referencia a objectos de la clase game
+  set strmSubs(Stream strm) {this._strmSubs = strm.listen((strGame) => gameHandler(strGame));}
 
   // Devuelve la promesa de la carga de [_image].
   Future complete() async {
