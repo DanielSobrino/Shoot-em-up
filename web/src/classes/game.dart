@@ -90,7 +90,7 @@ class Game {
     player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
     _spr.add(player);
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
+    // await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
     player.invulnerability = true;
     // SpriteGenerator(1750, Esprites.BASIC_PLANE, Point(160, -10), quantity: 3, triggerOffset: -80, movement: Movement(900, type: EmoveTypes.GROUNDED));
     
@@ -143,6 +143,7 @@ class Game {
         newSpr = Plane.fromType(type, isCache: isCache);
         break;
       case Esprites.EXPLOSION1:
+      case Esprites.EXPLOSION_MEDIUM:
         newSpr = Sprite.fromType(type);
         break;
       case Esprites.BULLET1:
@@ -202,7 +203,12 @@ class Game {
           bullet.hit(0);
           _explode(bullet, Esprites.HIT_LIGHT);
           if(pw_left <= 0) {
-            _explode(enemy, Esprites.EXPLOSION1, destroy: true, destroyInMillis: 300);
+            if (enemy.frameWidth < BIG_PLANE_WIDTH) {
+              _explode(enemy, Esprites.EXPLOSION1, destroy: true, destroyInMillis: 300);
+            } else {
+              _explode(enemy, Esprites.EXPLOSION_MEDIUM, destroy: true, destroyInMillis: 450);
+            }
+            
             // Añadir score del enemigo al score global
             score += enemy.score_value;
           } else {
@@ -267,7 +273,7 @@ class Game {
         newSpr.scale = currScale;
         // Añadimos la explosión a los sprites pendientes
         _waitingSpr.add(newSpr);
-        newSpr.hit(newSpr.frameDuration * newSpr.framesNum * 2); // Se programa la destrucción de la explosión
+        newSpr.hit(newSpr.frameDuration * newSpr.framesNum); // Se programa la destrucción de la explosión
       });
     });
   }

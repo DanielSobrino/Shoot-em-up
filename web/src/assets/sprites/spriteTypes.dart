@@ -4,7 +4,7 @@ import '../../environment.dart';
 Map<Esprites, Map<String, dynamic>> spriteTypes = {
   // AVIONES -----------------------------------------------
   Esprites.PLAYER: {
-    "fileName": "player.png",
+    "fileName": "planes/player.png",
     "scale": 1,
     "frames": 1,
     "hitboxes": [
@@ -18,7 +18,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
   Esprites.PLAYER_F: { 
     //para las hitbox flipped, coger el máximo de height, y restarle el número anterior. (a los pares) Y menor a mayor
-    "fileName": "player_flipped.png",
+    "fileName": "planes/player_flipped.png",
     "scale": 1,
     "frames": 1,
     "hitboxes": [
@@ -32,7 +32,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.BASIC_PLANE: {
-    "fileName": "plane1_spritesheet.png",
+    "fileName": "planes/plane1_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
     "frameDuration": 50,
@@ -48,7 +48,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
 
   },
   Esprites.BASIC_PLANE_F: {
-    "fileName": "plane1_flipped_spritesheet.png",
+    "fileName": "planes/plane1_flipped_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
     "frameDuration": 50,
@@ -65,7 +65,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.BACKW_PLANE: {
-    "fileName": "plane_turret_spritesheet.png",
+    "fileName": "planes/plane_turret_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
     "frameDuration": 50,
@@ -78,7 +78,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.BACKW_PLANE_F: {
-    "fileName": "plane_turret_flipped_spritesheet.png",
+    "fileName": "planes/plane_turret_flipped_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
     "frameDuration": 50,
@@ -91,7 +91,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.HELICOPTER: {
-    "fileName": "helicopter_spritesheet.png",
+    "fileName": "planes/helicopter_spritesheet.png",
     "frames": 5,
     "scale": 1.5,
     "frameDuration": 30,
@@ -104,7 +104,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.HELICOPTER_F: {
-    "fileName": "helicopter_flipped_spritesheet.png",
+    "fileName": "planes/helicopter_flipped_spritesheet.png",
     "frames": 5,
     "scale": 1.5,
     "frameDuration": 30,
@@ -117,7 +117,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.BIROTOR_PLANE: {
-    "fileName": "birotor_plane_spritesheet.png",
+    "fileName": "planes/birotor_plane_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
     "frameDuration": 50,
@@ -131,7 +131,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "score": 125
   },
   Esprites.BIROTOR_PLANE_F: {
-    "fileName": "birotor_plane_flipped_spritesheet.png",
+    "fileName": "planes/birotor_plane_flipped_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
     "frameDuration": 50,
@@ -146,7 +146,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.FIGHTER_JET: {
-    "fileName": "fighter_jet_spritesheet.png",
+    "fileName": "planes/fighter_jet_spritesheet.png",
     "frames": 2,
     "scale": 1.5,
     "frameDuration": 50,
@@ -159,7 +159,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "score": 75
   },
   // Esprites.FIGHTER_JET_F: {
-  //   "fileName": "fighter_jet_flipped_spritesheet.png",
+  //   "fileName": "planes/fighter_jet_flipped_spritesheet.png",
   //   "frames": 2,
   //   "scale": 1.5,
   //   "frameDuration": 50,
@@ -173,22 +173,29 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   // },
   // EFECTOS -----------------------------------------------
   Esprites.EXPLOSION1: {
-    "fileName": "explosion1_spritesheet.png",
+    "fileName": "explosions/explosion1_spritesheet.png",
     "frames": 6,
     "scale": 1.5,
-    "frameDuration": 50,
+    "frameDuration": 100,
+    "hitboxes": []
+  },
+  Esprites.EXPLOSION_MEDIUM: {
+    "fileName": "explosions/explosion_medium_spritesheet.png",
+    "frames": 7,
+    "scale": 1.5,
+    "frameDuration": 100,
     "hitboxes": []
   },
 
   Esprites.HIT_LIGHT: {
-    "fileName": "destello_spritesheet.png",
+    "fileName": "explosions/destello_spritesheet.png",
     "frames": 2,
     "scale": 1.5,
     "hitboxes": []
   },
   // BALAS -----------------------------------------------
   Esprites.BULLET1: {
-    "fileName": "bullet1_spritesheet.png",
+    "fileName": "bullets/bullet1_spritesheet.png",
     "frames": 2,
     "frameDuration": 100,
     "hitboxes": [
@@ -198,7 +205,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   },
 
   Esprites.BULLET_ENEM1: {
-    "fileName": "bullet_enem_spritesheet.png",
+    "fileName": "bullets/bullet_enem_spritesheet.png",
     "frames": 2,
     "scale": 1,
     "frameDuration": 100,
