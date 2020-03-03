@@ -43,7 +43,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "gunPos": [
       Point(15,2)
     ],
-    "shootType": EshootTypes.BASIC
+    "shootType": EshootTypes.BASIC,
+    "score": 50
 
   },
   Esprites.BASIC_PLANE_F: {
@@ -58,7 +59,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "gunPos": [
       Point(15,2)
     ],
-    "shootType": EshootTypes.BASIC
+    "shootType": EshootTypes.BASIC,
+    "score": 50
 
   },
 
@@ -71,7 +73,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [12,2,20,28],
       [2,5,30,13]
     ],
-    "shootType": EshootTypes.BASIC
+    "shootType": EshootTypes.BASIC,
+    "score": 50
   },
 
   Esprites.BACKW_PLANE_F: {
@@ -83,7 +86,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [12,1,20,27],
       [2,16,30,24]
     ],
-    "shootType": EshootTypes.BASIC
+    "shootType": EshootTypes.BASIC,
+    "score": 50
   },
 
   Esprites.HELICOPTER: {
@@ -95,7 +99,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [15,2,20,33],
       [8,11,27,15]
     ],
-    "power": 3
+    "power": 3,
+    "score": 75
   },
 
   Esprites.HELICOPTER_F: {
@@ -107,7 +112,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [15,2,20,33],
       [8,20,27,24]
     ],
-    "power": 3
+    "power": 3,
+    "score": 75
   },
 
   Esprites.BIROTOR_PLANE: {
@@ -121,7 +127,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [21,0,27,4]
     ],
     "power": 5,
-    "shootType": EshootTypes.TRIPLE
+    "shootType": EshootTypes.TRIPLE,
+    "score": 125
   },
   Esprites.BIROTOR_PLANE_F: {
     "fileName": "birotor_plane_flipped_spritesheet.png",
@@ -134,7 +141,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [21,36,27,40]
     ],
     "power": 5,
-    "shootType": EshootTypes.TRIPLE
+    "shootType": EshootTypes.TRIPLE,
+    "score": 125
   },
 
   Esprites.FIGHTER_JET: {
@@ -147,7 +155,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [6,27,25,31],
       [11,7,20,27],
       [14,1,17,7]
-    ]
+    ],
+    "score": 75
   },
   // Esprites.FIGHTER_JET_F: {
   //   "fileName": "fighter_jet_flipped_spritesheet.png",
@@ -159,7 +168,8 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   //     [6,5,25,9],
   //     [11,9,20,29],
   //     [14,29,17,35]
-  //   ]
+  //   ],
+  //   "score": 75
   // },
   // EFECTOS -----------------------------------------------
   Esprites.EXPLOSION1: {

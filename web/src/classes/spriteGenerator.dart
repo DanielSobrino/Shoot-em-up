@@ -19,7 +19,6 @@ class SpriteGenerator {
   Movement get movement => _movement;
 
   SpriteGenerator( this._trigger, this._spriteType, this._pos, { Movement movement, int quantity, int triggerOffset} ) {
-    print('movement: $movement');
     this._movement = movement;
     this._quantity = quantity ?? 1;
     this._triggerOffset = triggerOffset ?? 10;
@@ -32,7 +31,6 @@ class SpriteGenerator {
     }
     // ordenar la lista según valor de trigger
     _sprQueue.sort((a, b) => b._trigger.compareTo(a.trigger));
-    print('sprQueue: $_sprQueue');
   }
 
   static void clearQueue() => _sprQueue.clear();

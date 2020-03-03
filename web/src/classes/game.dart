@@ -5,11 +5,11 @@ import 'dart:math';
 import '../../src/environment.dart';
 import 'bullet.dart';
 import 'levelMap.dart';
-import 'movement.dart';
 import 'plane.dart';
 import 'sprite.dart';
 import 'spriteGenerator.dart';
 import 'animations.dart';
+import '../assets/maps/level_sprites.dart';
 
 html.CanvasElement _canvas;
 html.CanvasRenderingContext2D _ctx;
@@ -24,6 +24,8 @@ class Game {
   static List<Sprite> _waitingSpr = [];
   Plane player;
   List<Sprite> enemies = []; // para testear. añadir enemigos
+  int score = 0;
+
   int inc_step = 5;
 
   int aFrame;
@@ -34,7 +36,7 @@ class Game {
 
   Map<int, bool> pressed = {
     html.KeyCode.DOWN: false, html.KeyCode.UP: false, html.KeyCode.LEFT: false, 
-    html.KeyCode.RIGHT: false, html.KeyCode.SPACE: false
+    html.KeyCode.RIGHT: false, html.KeyCode.CTRL: false
   };
   // tiempo entre disparos
   int _lastShotTime = 0;
@@ -46,7 +48,7 @@ class Game {
   //setter para añadir sprites en espera
   static set addWaitingSpr(List<Sprite> sp) => _waitingSpr.addAll(sp);
   // stream para control del timing
-  static StreamController _gameTick = StreamController<String>.broadcast();
+  static StreamController _gameTick = StreamController<dynamic>.broadcast();
   // static get gameTick => _gameTick.stream;
 
   //---DEBUG---
@@ -79,19 +81,19 @@ class Game {
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
     _mapPos = maxMapPos.toDouble();
-    print(_mapPos);
+    // print(_mapPos);
+    //Preparamos los sprites del nivel
+    prepareSprites(1);
+
     //Creación del avión
     player = await loadSprite(Esprites.PLAYER);
     player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
     _spr.add(player);
-    // await takeOff(player, _ctx, levelMap, mapPos.toInt());
-    
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    // SpriteGenerator(1950, Esprites.PLAYER_F, Point(100, 0), quantity: 1, triggerOffset: -50);
-    SpriteGenerator(1950, Esprites.BASIC_PLANE, Point(180, -50), quantity: 5, triggerOffset: -50, movement: Movement(1000, desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
-    // SpriteGenerator(1500, Esprites.BIROTOR_PLANE, Point(60, -50), quantity: 2, triggerOffset: -150, movement: Movement(1000, type: EmoveTypes.LINEAR, desp_y: 0.8));
-    // SpriteGenerator(1400, Esprites.BACKW_PLANE, Point(250, -50), quantity: 4, triggerOffset: -50, movement: Movement(1000, type: EmoveTypes.ZIGZAG, max_x: 60));
- 
+    await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
+    player.invulnerability = true;
+    // SpriteGenerator(1750, Esprites.BASIC_PLANE, Point(160, -10), quantity: 3, triggerOffset: -80, movement: Movement(900, type: EmoveTypes.GROUNDED));
+    
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
     html.window.addEventListener('keyup', (e) => keyUp(e));
@@ -166,11 +168,13 @@ class Game {
     _spr.addAll(_waitingSpr);
     _waitingSpr.clear();
     //Enviamos el evento de tick para ser procesado por los sprites
-    _gameTick.sink.add('newTick');
+    _gameTick.sink.add({'newTick':null});
     //Comprobar colisiones
     collisions();
     //actualizar posición mapa
     _mapPos = _mapPos > _mapStep ? _mapPos - _mapStep : 0;
+    if (_mapStep > _mapPos)endLevelAnim(player, _ctx, levelMap, mapPos.toInt());
+    _gameTick.sink.add({'mapPos':_mapPos});
     //rebote sprites
     // moveSpr(enemies);
   }
@@ -199,6 +203,8 @@ class Game {
           _explode(bullet, Esprites.HIT_LIGHT);
           if(pw_left <= 0) {
             _explode(enemy, Esprites.EXPLOSION1, destroy: true, destroyInMillis: 300);
+            // Añadir score del enemigo al score global
+            score += enemy.score_value;
           } else {
             // mostramos la explosión pequeña sin destruir el sprite
             //_explode(bullet, Esprites.HIT_LIGHT);
@@ -238,7 +244,7 @@ class Game {
       enemies.add(enemy);
       _waitingSpr.add(enemy);
       if (currentGen.movement != null) {
-        currentGen.movement.startMove(enemy);
+        currentGen.movement.startMove(enemy, mapPos: _mapPos);
         currentGen.movement.strmSubs = _gameTick.stream; // lo añadimos al stream de game
       }
       SpriteGenerator.removeFromQueue(currentGen);
@@ -289,21 +295,38 @@ class Game {
     _ctx.setFillColorRgb(0x00, 0x00, 0x00);
     _ctx.fillText('fps: $fpsTotal', 360, 25);
     _ctx.fillText('sprites: ${_spr.length}  ', 260, 25);
+    _ctx.font = 'bold 20px roboto';
+    _ctx.fillText('Score: $score', 20, 30);
     
   }
 
   //---KEYBOARD---
   void keyDown(html.KeyboardEvent e) {
     // e.preventDefault();
+    // if(e.keyCode == html.KeyCode.P) {
+    //   if(pause) {
+    //     print('resume');
+    //     aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
+    //   } else {
+    //     print('pausa');
+    //     html.window.cancelAnimationFrame(aFrame);
+    //   }
+    //   pause = !pause;
+    //   return;
+    // }
+    // if (e.keyCode == html.KeyCode.DOWN || e.keyCode == html.KeyCode.UP || e.keyCode == html.KeyCode.LEFT || 
+    //     e.keyCode == html.KeyCode.RIGHT || e.keyCode == html.KeyCode.CTRL) {
+    //   pressed[e.keyCode] = true;
+    // }
     switch (e.keyCode) {
       case html.KeyCode.P:
         if(pause) {
           print('resume');
-          _gameTick.sink.add('pauseOff');
+          _gameTick.sink.add({'pauseOff':null});
           // aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
         } else {
           print('pausa');
-          _gameTick.sink.add('pauseOn');
+          _gameTick.sink.add({'pauseOn':null});
           // html.window.cancelAnimationFrame(aFrame);
         }
         pause = !pause;
@@ -315,7 +338,7 @@ class Game {
       case html.KeyCode.UP:
       case html.KeyCode.LEFT:
       case html.KeyCode.RIGHT:
-      case html.KeyCode.SPACE:
+      case html.KeyCode.CTRL:
         pressed[e.keyCode] = true;
         break;
     }
@@ -328,19 +351,22 @@ class Game {
       player.pos = Point(player.pos.x, player.pos.y + inc_step + player.frame.height * player.scale > SCREEN_HEIGHT ? SCREEN_HEIGHT - player.frame.height * player.scale : player.pos.y + inc_step);} 
     if(pressed[html.KeyCode.UP] && player.pos.y > 0) {
       player.pos = Point(player.pos.x, player.pos.y - inc_step < 0 ? 0 : player.pos.y - inc_step);} 
-    if(pressed[html.KeyCode.RIGHT] && player.pos.x < SCREEN_WIDTH - player.frame.width * player.scale) {
-      player.pos = Point(player.pos.x + inc_step + player.frame.width * player.scale > SCREEN_WIDTH ? SCREEN_WIDTH - player.frame.width * player.scale : player.pos.x + inc_step , player.pos.y);}
     if(pressed[html.KeyCode.LEFT] && player.pos.x > 0) { 
       player.pos = Point(player.pos.x - inc_step < 0 ? 0 : player.pos.x - inc_step, player.pos.y);} 
+    if(pressed[html.KeyCode.RIGHT] && player.pos.x < SCREEN_WIDTH - player.frame.width * player.scale) {
+      player.pos = Point(player.pos.x + inc_step + player.frame.width * player.scale > SCREEN_WIDTH ? SCREEN_WIDTH - player.frame.width * player.scale : player.pos.x + inc_step , player.pos.y);}
   
-    if(pressed[html.KeyCode.SPACE] &&  currentTime - _lastShotTime > _shotDelay && !player.isFlicking && !player.onDestroy) {
+    if(pressed[html.KeyCode.CTRL] &&  currentTime - _lastShotTime > _shotDelay && !player.isFlicking && !player.onDestroy) {
       player.planeShoot();
       _lastShotTime = currentTime;
     }
   }
 
   void keyUp(html.KeyboardEvent e) {
-    pressed[e.keyCode] = false;
+    if (e.keyCode == html.KeyCode.DOWN || e.keyCode == html.KeyCode.UP || e.keyCode == html.KeyCode.LEFT || 
+        e.keyCode == html.KeyCode.RIGHT || e.keyCode == html.KeyCode.CTRL) {
+      pressed[e.keyCode] = false;
+    }
   }
 
   // crear malotes

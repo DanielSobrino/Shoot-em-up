@@ -14,6 +14,7 @@ class Plane extends Sprite with Shoot {
   List<Point> _gunDirection;
   Esprites _bulletType;
   EshootTypes _shootType;
+  int _score_value;
   bool _playerBullet; // para marcar si la bala es del jugador
   int _shootRate; // delay entre disparos
   int _randomRate; // delay random que se añade entre disparos
@@ -27,6 +28,7 @@ class Plane extends Sprite with Shoot {
   Plane.fromType(Esprites type, {bool isCache}): super.fromType(type) {
     Map<String, dynamic> spr_type = spriteTypes[type];
     _shootType = spr_type['shootType'];
+    _score_value = spr_type['score'];
     _isCache = isCache ?? false;
     prepareShoot();
   }
@@ -34,6 +36,7 @@ class Plane extends Sprite with Shoot {
   // getters
   List<dynamic> get gunPos => _gunPos;
   List<Point> get gunDirection => _gunDirection;
+  int get score_value => _score_value;
   Esprites get bulletType => _bulletType;
   bool get playerBullet => _playerBullet;
 
@@ -73,14 +76,14 @@ class Plane extends Sprite with Shoot {
   void planeShoot() => shoot(this);
 
   @override
-  void gameHandler(String gameEvent) {
+  void gameHandler(Map<String, dynamic> gameEvent) {
     super.gameHandler(gameEvent);
 
-    if(gameEvent == "pauseOn") {
+    if(gameEvent.containsKey("pauseOn")) {
       print('activada la pausa en plane');
       this._gamePaused = true;
     }
-    if(gameEvent == "pauseOff") {
+    if(gameEvent.containsKey("pauseOff")) {
       print('desactivada la pausa en plane');
       this._gamePaused = false;
     }

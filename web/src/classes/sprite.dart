@@ -13,6 +13,7 @@ class Sprite {
   double _scale;
   Esprites _type;
   int _power;
+  int _score_value;
 
   int _frameIndex = 0;
   int _framesNum; // for spritesheets
@@ -39,7 +40,7 @@ class Sprite {
   int  _flickerCounter; // contador de ticks hasta TICKS_FLICKER
 
   // nos suscribimos al stream de la clase game
-  StreamSubscription<String> _strmSubs;
+  StreamSubscription<dynamic> _strmSubs;
 
   // Constructores
   //
@@ -53,6 +54,7 @@ class Sprite {
     Map<String, dynamic> spr_type = spriteTypes[type];
     _fileName = spr_type['fileName'];
     _type = type;
+    _score_value = spr_type['score'];
     _power = spr_type['power'] ?? 2;
     _framesNum = spr_type['frames'] ?? 1;
     _scale =  spr_type['scale'] ?? 2.0;
@@ -80,6 +82,7 @@ class Sprite {
   int get framesNum => _framesNum;
   int get ticksCounter => _ticksCounter;
   int get power => _power;
+  int get score_value => _score_value;
   bool get showSprite => _showSprite;
   bool get invulnerability => _invulnerability;
   bool get isFlicking => _isFlicking;
@@ -134,9 +137,9 @@ class Sprite {
     _frameIndex = _frameIndex < _framesNum - 1 ? ++_frameIndex : 0;
   }
 
-  void gameHandler(String gameEvent) {
+  void gameHandler(Map<String, dynamic> gameEvent) {
     // print('gameHandler: $gameEvent');
-    if(gameEvent == 'newTick') {
+    if(gameEvent.containsKey("newTick")) {
       _ticksCounter++;
       // cambio de frame
       if(_ticksCounter >= TICKS_ANIMATE) {
@@ -195,7 +198,7 @@ class Sprite {
   }
 
   void hit(int millis) {
-    print('hit: $type');
+    // print('hit: $type');
     _onDestroy = true; // activamos la destrucción
     _invulnerability = true; // invulnerable mientras está en proceso de destrucción
     // si el delay es 0, destrucción inmediata
