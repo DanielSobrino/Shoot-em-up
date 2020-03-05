@@ -52,6 +52,7 @@ class Game {
   // static get gameTick => _gameTick.stream;
 
   //---DEBUG---
+  bool debug = false;
   bool showHitboxes = false;
   bool pause = false;
   // posiciones mapa
@@ -91,9 +92,8 @@ class Game {
     _spr.add(player);
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
     // await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
-    player.invulnerability = true;
-    // SpriteGenerator(1750, Esprites.BASIC_PLANE, Point(160, -10), quantity: 3, triggerOffset: -80, movement: Movement(900, type: EmoveTypes.GROUNDED));
-    
+    // player.invulnerability = true;
+
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
     html.window.addEventListener('keyup', (e) => keyUp(e));
@@ -182,6 +182,7 @@ class Game {
 
   // Gestión de colisiones
   void collisions() {
+    int pw_left;
     // listas para los bullets
     List<Sprite> player_bullets = _spr.where((s) => s is Bullet && s.playerBullet).toList();
     List<Sprite> enemy_bullets = _spr.where((s) => s is Bullet && !s.playerBullet).toList();
@@ -198,7 +199,7 @@ class Game {
     for(Sprite enemy in enemies) {
       for(Sprite bullet in player_bullets) {
         if(!enemy.invulnerability && enemy.collision(bullet)) {
-          int pw_left = enemy.power - bullet.power;
+          pw_left = enemy.power - bullet.power;
           // print('Ep: ${enemy.power}, Bp: ${bullet.power}');
           bullet.hit(0);
           _explode(bullet, Esprites.HIT_LIGHT);
@@ -221,7 +222,9 @@ class Game {
       }
       // destrucción del player
       if(!enemy.onDestroy && !player.invulnerability && enemy.collision(player)) {
-        _explode(enemy, Esprites.EXPLOSION1, destroy: true);
+        pw_left = enemy.power - 1;
+        enemy.power = pw_left;
+        enemy.setFlicker();
         _explode(player, Esprites.EXPLOSION1, destroy: true);
         Future.delayed(Duration(milliseconds: 800), gameOver);
       }
@@ -296,11 +299,13 @@ class Game {
     }
     
     //fps
+    if (debug) {
     fps++;
     _ctx.font = 'bold 18px serif';
     _ctx.setFillColorRgb(0x00, 0x00, 0x00);
     _ctx.fillText('fps: $fpsTotal', 360, 25);
     _ctx.fillText('sprites: ${_spr.length}  ', 260, 25);
+    }
     _ctx.font = 'bold 20px roboto';
     _ctx.fillText('Score: $score', 20, 30);
     
@@ -339,6 +344,9 @@ class Game {
         break;
       case html.KeyCode.H:
         this.showHitboxes = !this.showHitboxes;
+        break;
+      case html.KeyCode.D:
+        this.debug = !debug;
         break;
       case html.KeyCode.DOWN:
       case html.KeyCode.UP:
