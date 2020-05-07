@@ -177,14 +177,16 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "frames": 6,
     "scale": 1.5,
     "frameDuration": 100,
-    "hitboxes": []
+    "hitboxes": [],
+    "audio": Esounds.EXPLOSION1
   },
   Esprites.EXPLOSION_MEDIUM: {
     "fileName": "explosions/explosion_medium_spritesheet.png",
     "frames": 7,
     "scale": 1.5,
     "frameDuration": 100,
-    "hitboxes": []
+    "hitboxes": [],
+    "audio": Esounds.EXPLOSION_MEDIUM
   },
 
   Esprites.HIT_LIGHT: {

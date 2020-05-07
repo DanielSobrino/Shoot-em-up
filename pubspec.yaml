@@ -1,6 +1,6 @@
 name: shoot_em_up
 description: An absolute bare-bones web app.
-version: 0.6.0
+version: 0.7.0
 
 environment:
   sdk: '>=2.5.0 <3.0.0'

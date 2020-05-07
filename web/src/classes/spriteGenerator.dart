@@ -18,7 +18,7 @@ class SpriteGenerator {
   Point get pos => _pos;
   Movement get movement => _movement;
 
-  SpriteGenerator( this._trigger, this._spriteType, this._pos, { Movement movement, int quantity, int triggerOffset} ) {
+  SpriteGenerator( this._trigger, this._spriteType, this._pos, {Movement movement, int quantity, int triggerOffset} ) {
     this._movement = movement;
     this._quantity = quantity ?? 1;
     this._triggerOffset = triggerOffset ?? 10;

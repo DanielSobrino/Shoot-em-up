@@ -19,6 +19,7 @@ class Sprite {
   int _framesNum; // for spritesheets
   int _frameWidth;
   int _frameDuration;
+  Esounds _audio;
   int _ticksCounter = 0;
   final int TICKS_ANIMATE = 5;
   static Map<String, List<html.CanvasElement>> _frames = {};
@@ -59,6 +60,7 @@ class Sprite {
     _framesNum = spr_type['frames'] ?? 1;
     _scale =  spr_type['scale'] ?? 2.0;
     _frameDuration = spr_type['frameDuration'] ?? 50;
+    _audio = spr_type['audio'];
     spr_type['hitboxes'].forEach((hbox) => setHitbox(Point(hbox[0],hbox[1]), Point(hbox[2], hbox[3])));
   }
 
@@ -86,6 +88,7 @@ class Sprite {
   bool get showSprite => _showSprite;
   bool get invulnerability => _invulnerability;
   bool get isFlicking => _isFlicking;
+  Esounds get audio => _audio;
 
   // Setters
   set pos(Point p) => this._pos = p;

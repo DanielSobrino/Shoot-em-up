@@ -10,21 +10,24 @@ import 'sprite.dart';
 import 'spriteGenerator.dart';
 import 'animations.dart';
 import '../assets/maps/level_sprites.dart';
+import 'sound.dart';
 
 html.CanvasElement _canvas;
 html.CanvasRenderingContext2D _ctx;
 
 // final LevelMap levelMap = LevelMap.fromJson(level1);
-
-
 class Game {
 
   LevelMap levelMap;
   static List<Sprite> _spr = []; // sprites activos en el gameloop
   static List<Sprite> _waitingSpr = [];
   Plane player;
-  List<Sprite> enemies = []; // para testear. añadir enemigos
+  List<Sprite> enemies = [];
+
+  // variables de score
   int score = 0;
+  int created_enemies = 0;
+  int defeated_enemies = 0;
 
   int inc_step = 5;
 
@@ -50,60 +53,86 @@ class Game {
   // stream para control del timing
   static StreamController _gameTick = StreamController<dynamic>.broadcast();
   // static get gameTick => _gameTick.stream;
+  // stream para control del menu
+  static StreamController menuCtrl = StreamController<dynamic>();
 
-  //---DEBUG---
-  bool debug = false;
-  bool showHitboxes = false;
-  bool pause = false;
   // posiciones mapa
   static double _mapPos = 0; //posición desde donde se va a dibujar
   double _mapStep  = 0.6; //pixels verticales a desplazar
   static get mapPos => _mapPos;
 
-  Game() {
-    init().then((resp) {
-      gameLoop(0);
-    });
-  }
+  //---DEBUG---
+  bool debug = true;
+  bool showHitboxes = false;
+  bool pause = false;
+
+  // Game(int level) {
+  //   init().then((resp) {
+  //     // gameLoop(0);
+  //     initLevel(level);
+  //   });
+  // }
 
   Future init() async {
     _canvas = html.querySelector('#canvas');
     _ctx = _canvas.getContext('2d');
     _canvas..width = SCREEN_WIDTH ..height = SCREEN_HEIGHT;
     _ctx.imageSmoothingEnabled = false;
-    // cargamos el mapa
-    levelMap = await LevelMap.FromFile('/src/assets/maps/level1.json');
     // para generar la cache de imágenes
     for(Esprites esptype in Esprites.values) {
       Sprite sp = await loadSprite(esptype, isCache: true);
       sp.hit(0);
     }
     print('fin cache de imagenes');
-    // propiedades para el mapa
-    int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    _mapPos = maxMapPos.toDouble();
-    // print(_mapPos);
-    //Preparamos los sprites del nivel
-    prepareSprites(1);
-
-    //Creación del avión
-    player = await loadSprite(Esprites.PLAYER);
-    player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
-    _spr.add(player);
-    // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    // await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
-    // player.invulnerability = true;
-
+    // player = await loadSprite(Esprites.PLAYER);
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
     html.window.addEventListener('keyup', (e) => keyUp(e));
-
     //mostrar fps
     Timer.periodic(Duration(seconds: 1), (t) {fpsTotal = fps; fps = 0;});
   }
 
+  void initLevel(int level) async {
+    // INICIALIZAR VARIABLES
+    _spr.clear();
+    _waitingSpr.clear();
+    enemies.clear();
+    score = 0;
+    created_enemies = 0;
+    defeated_enemies = 0;
+    endGame = false;
+    winGame = false;
+    _mapPos = 0;
+
+    _gameTick = StreamController<dynamic>.broadcast();
+    // cargamos el mapa
+    levelMap = await LevelMap.FromFile('/src/assets/maps/level${level}.json');
+    // propiedades para el mapa
+    int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
+    // maxMapPos = 50;
+    _mapPos = maxMapPos.toDouble();
+    // print(_mapPos); // debug acabar rápido
+    //vaciamos la cola de spriteGeneratos
+    SpriteGenerator.clearQueue();
+    //Preparamos los sprites del nivel
+    prepareSprites(level);
+    //Creación del jugador
+    player = await loadSprite(Esprites.PLAYER);
+    player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
+    _spr.add(player);
+    // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
+    await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
+    player.invulnerability = true;
+    //Reproducimos música de fondo
+    Sound.loop(Esounds.BG_MUSIC);
+
+    
+    // LLAMADA GAME LOOP
+    gameLoop(0);
+
+  }
+
   void gameLoop(num f) {
-    // if(pause) return;
     if(!endGame) {
       kybControl();
       if(!pause) updateState();
@@ -112,8 +141,23 @@ class Game {
     } else {
       _gameTick.sink.close(); // paramos el streamController
       _spr.forEach((s) => s.hit(0)); // eliminamos todos los Sprites
-      String txt = winGame ? 'U win! :D' : 'Has morío';
-      showText(txt);
+      // Comprobamos si ha ganado
+      if (winGame) {
+        endLevelAnim(player, _ctx, levelMap);
+        // calcular estrellas basado en e_d / e_c 
+        double efficiency = defeated_enemies / created_enemies;
+        int stars = efficiency < 0.4 ? 1 : efficiency < 0.9 ? 2 : 3;
+        menuCtrl.sink.add({'victory': stars});
+
+        print(efficiency);
+        print('c: $created_enemies');
+        print('d: $defeated_enemies');
+
+      } else {
+        menuCtrl.sink.add({'defeat': 1});
+      }
+      html.window.cancelAnimationFrame(aFrame);
+
     }
   }
 
@@ -174,7 +218,10 @@ class Game {
     collisions();
     //actualizar posición mapa
     _mapPos = _mapPos > _mapStep ? _mapPos - _mapStep : 0;
-    if (_mapStep > _mapPos)endLevelAnim(player, _ctx, levelMap, mapPos.toInt());
+    if (_mapStep > _mapPos) {
+      winGame = !player.onDestroy;
+      gameOver();
+    }
     _gameTick.sink.add({'mapPos':_mapPos});
     //rebote sprites
     // moveSpr(enemies);
@@ -189,16 +236,11 @@ class Game {
     // lista enemigos, debe ser Plane y no ser el Player
     List<Sprite> enemies = _spr.where((s) => s.type != Esprites.PLAYER && s is Plane).toList();
     // enemies.removeWhere((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1);
-    
-    // if(enemies.isEmpty) {
-    //   endGame = true;
-    //   winGame = true && !player.onDestroy; // winGame si player no está en destrucción
-    // }
 
     // comprobamos las colisiones de bullets del player y la colisión del player con otro enemigo
     for(Sprite enemy in enemies) {
       for(Sprite bullet in player_bullets) {
-        if(!enemy.invulnerability && enemy.collision(bullet)) {
+        if(!enemy.onDestroy && !enemy.invulnerability && enemy.collision(bullet)) {
           pw_left = enemy.power - bullet.power;
           // print('Ep: ${enemy.power}, Bp: ${bullet.power}');
           bullet.hit(0);
@@ -212,6 +254,7 @@ class Game {
             
             // Añadir score del enemigo al score global
             score += enemy.score_value;
+            defeated_enemies++;
           } else {
             // mostramos la explosión pequeña sin destruir el sprite
             //_explode(bullet, Esprites.HIT_LIGHT);
@@ -226,6 +269,7 @@ class Game {
         enemy.power = pw_left;
         enemy.setFlicker();
         _explode(player, Esprites.EXPLOSION1, destroy: true);
+        winGame = false;
         Future.delayed(Duration(milliseconds: 800), gameOver);
       }
     }
@@ -236,6 +280,7 @@ class Game {
         bullet.hit(0);
         _explode(bullet, Esprites.HIT_LIGHT);
         _explode(player, Esprites.EXPLOSION1, destroy: true);
+        winGame = false;
         Future.delayed(Duration(milliseconds: 800), gameOver);
       }
     }
@@ -251,6 +296,7 @@ class Game {
       enemy.pos = currentGen.pos;
       // enemy.direct = Point(0.5, 1); //
       enemies.add(enemy);
+      created_enemies++;
       _waitingSpr.add(enemy);
       if (currentGen.movement != null) {
         currentGen.movement.startMove(enemy, mapPos: _mapPos);
@@ -272,6 +318,7 @@ class Game {
       double currScale = currSpr.scale;
       currSpr.child = newSpr; // Asignamos la explosión como hijo del sprite
       newSpr.complete().then((e) {
+        if (newSpr.audio != null) Sound.play(newSpr.audio);
         newSpr.pos = currPos;
         newSpr.scale = currScale;
         // Añadimos la explosión a los sprites pendientes
@@ -298,13 +345,17 @@ class Game {
       }
     }
     
-    //fps
+    //textos
     if (debug) {
+    //fps
     fps++;
     _ctx.font = 'bold 18px serif';
     _ctx.setFillColorRgb(0x00, 0x00, 0x00);
     _ctx.fillText('fps: $fpsTotal', 360, 25);
     _ctx.fillText('sprites: ${_spr.length}  ', 260, 25);
+    // created / defeated enemies
+    _ctx.fillText('c_enemies: $created_enemies', 300, 50);
+    _ctx.fillText('d_enemies: $defeated_enemies', 300, 75);
     }
     _ctx.font = 'bold 20px roboto';
     _ctx.fillText('Score: $score', 20, 30);
@@ -314,21 +365,6 @@ class Game {
   //---KEYBOARD---
   void keyDown(html.KeyboardEvent e) {
     // e.preventDefault();
-    // if(e.keyCode == html.KeyCode.P) {
-    //   if(pause) {
-    //     print('resume');
-    //     aFrame = html.window.requestAnimationFrame((f) => gameLoop(f));
-    //   } else {
-    //     print('pausa');
-    //     html.window.cancelAnimationFrame(aFrame);
-    //   }
-    //   pause = !pause;
-    //   return;
-    // }
-    // if (e.keyCode == html.KeyCode.DOWN || e.keyCode == html.KeyCode.UP || e.keyCode == html.KeyCode.LEFT || 
-    //     e.keyCode == html.KeyCode.RIGHT || e.keyCode == html.KeyCode.CTRL) {
-    //   pressed[e.keyCode] = true;
-    // }
     switch (e.keyCode) {
       case html.KeyCode.P:
         if(pause) {
@@ -372,6 +408,7 @@ class Game {
   
     if(pressed[html.KeyCode.CTRL] &&  currentTime - _lastShotTime > _shotDelay && !player.isFlicking && !player.onDestroy) {
       player.planeShoot();
+      Sound.play(Esounds.PLAYER_SHOT);
       _lastShotTime = currentTime;
     }
   }
@@ -397,24 +434,25 @@ class Game {
 
   void gameOver() {
     endGame = true;
+    Sound.stop(Esounds.BG_MUSIC);
   }
 
 }
 
 
-void moveSpr(List<Sprite> sp) {
-  int inc_step = 2;
-  Iterator<Sprite> i = sp.iterator;
-  while (i.moveNext()) {
-    final x = i.current.pos.x + i.current.direct.x * inc_step;
-    final y = i.current.pos.y + i.current.direct.y * inc_step;
-    i.current.pos = Point(x,y);
-    i.current.direct = Point(x < 0 || x > SCREEN_WIDTH - i.current.frame.width * i.current.scale ? i.current.direct.x * -1 : i.current.direct.x,
-                              y < 0 || y > SCREEN_HEIGHT - i.current.frame.height * i.current.scale ? i.current.direct.y * -1 : i.current.direct.y);
-    if (i.current.child != null) {
-      // movemos los child al igual que su padre
-      i.current.child.pos = i.current.pos;
-    }
-  }
+// void moveSpr(List<Sprite> sp) {
+//   int inc_step = 2;
+//   Iterator<Sprite> i = sp.iterator;
+//   while (i.moveNext()) {
+//     final x = i.current.pos.x + i.current.direct.x * inc_step;
+//     final y = i.current.pos.y + i.current.direct.y * inc_step;
+//     i.current.pos = Point(x,y);
+//     i.current.direct = Point(x < 0 || x > SCREEN_WIDTH - i.current.frame.width * i.current.scale ? i.current.direct.x * -1 : i.current.direct.x,
+//                               y < 0 || y > SCREEN_HEIGHT - i.current.frame.height * i.current.scale ? i.current.direct.y * -1 : i.current.direct.y);
+//     if (i.current.child != null) {
+//       // movemos los child al igual que su padre
+//       i.current.child.pos = i.current.pos;
+//     }
+//   }
 
-}
+// }

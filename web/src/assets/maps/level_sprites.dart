@@ -23,7 +23,6 @@ void prepareSprites(int level) {
       SpriteGenerator(450, Esprites.BASIC_PLANE, Point(180, -50), quantity: 4, triggerOffset: -50, movement: Movement(desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
       break;
       //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
   }
 
 }
