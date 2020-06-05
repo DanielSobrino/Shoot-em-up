@@ -28,7 +28,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [20,10,44,25],
       [13,0,51,7]
     ],
-    "shootType": EshootTypes.PLAYER
+    "shootType": EshootTypes.PLAYER_F
   },
 
   Esprites.BASIC_PLANE: {
@@ -59,7 +59,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "gunPos": [
       Point(15,2)
     ],
-    "shootType": EshootTypes.BASIC,
+    "shootType": EshootTypes.BASIC_F,
     "score": 50
 
   },
@@ -73,7 +73,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [12,2,20,28],
       [2,5,30,13]
     ],
-    "shootType": EshootTypes.BASIC,
+    "shootType": EshootTypes.DOUBLE,
     "score": 50
   },
 
@@ -86,7 +86,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [12,1,20,27],
       [2,16,30,24]
     ],
-    "shootType": EshootTypes.BASIC,
+    "shootType": EshootTypes.DOUBLE_F,
     "score": 50
   },
 
@@ -141,7 +141,7 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
       [21,36,27,40]
     ],
     "power": 5,
-    "shootType": EshootTypes.TRIPLE,
+    "shootType": EshootTypes.TRIPLE_F,
     "score": 125
   },
 

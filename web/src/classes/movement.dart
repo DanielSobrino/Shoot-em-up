@@ -36,9 +36,9 @@ class Movement {
 
   Movement({int max_y, EmoveTypes type, double desp_x, double desp_y, double sin_ampl, double sin_res, int max_x }) {
     // inicializar posición fuera de la pantalla
-    this.max_y = max_y ?? 1000;
     this.desp_x = desp_x ?? 0;
     this.desp_y = desp_y ?? 1.0;
+    this.max_y = max_y ?? ((this.desp_y < 0) ? -100 : SCREEN_HEIGHT + 100);
     this.max_x = max_x ?? 20;
     this.sin_ampl = sin_ampl ?? 80.0;
     this.sin_res = sin_res ?? 0.05;

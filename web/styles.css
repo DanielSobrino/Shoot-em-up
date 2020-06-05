@@ -31,6 +31,13 @@ img, button {
   image-rendering: -moz-crisp-edges;
 }
 
+@font-face {
+  font-family: 'Retro';
+  font-style: normal;
+  font-weight: 400;
+  src: url(src/assets/fonts/retro.ttf) format('truetype');
+}
+
 @keyframes playlogo {
   100% { background-position: -1600px; }
 }
@@ -65,6 +72,20 @@ button {
   width: calc(58*4px);
   height: calc(23*4px);
 }
+
+#final_score {
+  font-family: 'Retro';
+  font-size: 60px;
+  /* margin-left: 60px; */
+  top: 130px;
+  width: 432px;
+
+}
+
+#final_score p {
+  text-align: center;
+}
+
 
 #button_play {
   margin-top: 150px;

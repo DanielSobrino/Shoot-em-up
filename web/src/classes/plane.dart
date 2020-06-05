@@ -62,10 +62,10 @@ class Plane extends Sprite with Shoot {
 
   void loopShoot() async {
     int shotDelay = _shootRate + Random().nextInt(_randomRate);
-    await Future.delayed(Duration(milliseconds: shotDelay));
     if(!this.onDestroy) {
       if(!_gamePaused) {
         planeShoot();
+        await Future.delayed(Duration(milliseconds: shotDelay));
       }
       loopShoot();
     }

@@ -21,11 +21,15 @@ class Game {
   LevelMap levelMap;
   static List<Sprite> _spr = []; // sprites activos en el gameloop
   static List<Sprite> _waitingSpr = [];
-  Plane player;
   List<Sprite> enemies = [];
 
+  Plane player;
+  int player_health;
+  List<html.ImageElement> healthbar = [];
+
+
   // variables de score
-  int score = 0;
+  static int score = 0;
   int created_enemies = 0;
   int defeated_enemies = 0;
 
@@ -84,7 +88,10 @@ class Game {
       sp.hit(0);
     }
     print('fin cache de imagenes');
-    // player = await loadSprite(Esprites.PLAYER);
+    // Carga de las imágenes de la healthbar
+    for (int i = 0; i < 10; i++) {
+      healthbar.add(html.ImageElement(src: 'src/assets/sprites/healthbar/${i}_health.png'));
+    }
     //Keyboard listenners
     html.window.addEventListener('keydown', (e) => keyDown(e));
     html.window.addEventListener('keyup', (e) => keyUp(e));
@@ -98,6 +105,7 @@ class Game {
     _waitingSpr.clear();
     enemies.clear();
     score = 0;
+    player_health = 9;
     created_enemies = 0;
     defeated_enemies = 0;
     endGame = false;
@@ -107,9 +115,10 @@ class Game {
     _gameTick = StreamController<dynamic>.broadcast();
     // cargamos el mapa
     levelMap = await LevelMap.FromFile('/src/assets/maps/level${level}.json');
+    
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    // maxMapPos = 50;
+    // _mapPos = 10;
     _mapPos = maxMapPos.toDouble();
     // print(_mapPos); // debug acabar rápido
     //vaciamos la cola de spriteGeneratos
@@ -121,8 +130,10 @@ class Game {
     player.pos = Point(SCREEN_WIDTH/2 - player.width/4, 670);
     _spr.add(player);
     // player.setFlicker(ticks: 100, invulnerable: true); // parpadeo player
-    await takeOff(player, _ctx, levelMap, mapPos.toInt()); // comentar despegue para debug
-    player.invulnerability = true;
+    if (!debug) {
+      await takeOff(player, _ctx, levelMap, mapPos.toInt());
+    }
+    // player.invulnerability = true;
     //Reproducimos música de fondo
     Sound.loop(Esounds.BG_MUSIC);
 
@@ -268,20 +279,37 @@ class Game {
         pw_left = enemy.power - 1;
         enemy.power = pw_left;
         enemy.setFlicker();
-        _explode(player, Esprites.EXPLOSION1, destroy: true);
-        winGame = false;
-        Future.delayed(Duration(milliseconds: 800), gameOver);
+        if (player_health <= 2) {
+          player_health = 0; // para la healthbar
+          print(player_health);
+          _explode(player, Esprites.EXPLOSION1, destroy: true);
+          winGame = false;
+          Future.delayed(Duration(milliseconds: 800), gameOver);
+        } else {
+          print('choque aviones');
+          player_health = player_health - 2; // el jugador recibe 2 de daño al colisionar con un enemigo
+          print(player_health);
+          player.setFlicker(ticks: 40, invulnerable: true);
+        }
       }
     }
-
+    
     // comprobamos si el player choca con una bala enemiga
     for (Bullet bullet in enemy_bullets) {
       if (!player.invulnerability && player.collision(bullet)) {
         bullet.hit(0);
         _explode(bullet, Esprites.HIT_LIGHT);
-        _explode(player, Esprites.EXPLOSION1, destroy: true);
-        winGame = false;
-        Future.delayed(Duration(milliseconds: 800), gameOver);
+        if (player_health <= 1) {
+          player_health = 0; // para la healthbar
+          print(player_health);
+          _explode(player, Esprites.EXPLOSION1, destroy: true);
+          winGame = false;
+          Future.delayed(Duration(milliseconds: 800), gameOver);
+        } else {
+          player_health--; // el jugador recibe 1 de daño al colisionar con una bala
+          print(player_health);
+          player.setFlicker(invulnerable: true); 
+        }
       }
     }
 
@@ -344,21 +372,24 @@ class Game {
         });
       }
     }
+
+    _ctx.drawImage(healthbar[player_health], 35, 850);
     
     //textos
     if (debug) {
-    //fps
-    fps++;
-    _ctx.font = 'bold 18px serif';
-    _ctx.setFillColorRgb(0x00, 0x00, 0x00);
-    _ctx.fillText('fps: $fpsTotal', 360, 25);
-    _ctx.fillText('sprites: ${_spr.length}  ', 260, 25);
-    // created / defeated enemies
-    _ctx.fillText('c_enemies: $created_enemies', 300, 50);
-    _ctx.fillText('d_enemies: $defeated_enemies', 300, 75);
+      //fps
+      fps++;
+      _ctx.font = 'bold 18px serif';
+      _ctx.setFillColorRgb(0x00, 0x00, 0x00);
+      _ctx.fillText('fps: $fpsTotal', 360, 25);
+      _ctx.fillText('sprites: ${_spr.length}  ', 260, 25);
+      // created / defeated enemies
+      _ctx.fillText('c_enemies: $created_enemies', 300, 50);
+      _ctx.fillText('d_enemies: $defeated_enemies', 300, 75);
+      _ctx.fillText('map_pos: ${_mapPos.toInt()}', 300, 100);
     }
-    _ctx.font = 'bold 20px roboto';
-    _ctx.fillText('Score: $score', 20, 30);
+    _ctx.font = '35px Retro';//retro.ttf';
+    _ctx.fillText('SCORE: $score', 20, 30);
     
   }
 
