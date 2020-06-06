@@ -118,7 +118,7 @@ class Game {
     
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    // _mapPos = 10;
+    // _mapPos = 4500;
     _mapPos = maxMapPos.toDouble();
     // print(_mapPos); // debug acabar rápido
     //vaciamos la cola de spriteGeneratos
@@ -280,6 +280,7 @@ class Game {
         enemy.power = pw_left;
         enemy.setFlicker();
         if (player_health <= 2) {
+          Sound.play(Esounds.PLAYER_HURT);
           player_health = 0; // para la healthbar
           print(player_health);
           _explode(player, Esprites.EXPLOSION1, destroy: true);
@@ -287,6 +288,7 @@ class Game {
           Future.delayed(Duration(milliseconds: 800), gameOver);
         } else {
           print('choque aviones');
+          Sound.play(Esounds.PLAYER_HURT);
           player_health = player_health - 2; // el jugador recibe 2 de daño al colisionar con un enemigo
           print(player_health);
           player.setFlicker(ticks: 40, invulnerable: true);
@@ -300,12 +302,14 @@ class Game {
         bullet.hit(0);
         _explode(bullet, Esprites.HIT_LIGHT);
         if (player_health <= 1) {
+          Sound.play(Esounds.PLAYER_HURT);
           player_health = 0; // para la healthbar
           print(player_health);
           _explode(player, Esprites.EXPLOSION1, destroy: true);
           winGame = false;
           Future.delayed(Duration(milliseconds: 800), gameOver);
         } else {
+          Sound.play(Esounds.PLAYER_HURT);
           player_health--; // el jugador recibe 1 de daño al colisionar con una bala
           print(player_health);
           player.setFlicker(invulnerable: true); 

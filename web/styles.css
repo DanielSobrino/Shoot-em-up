@@ -45,7 +45,7 @@ img, button {
 img[src=""] { content:url("data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="); }
 
 .logo {
-  margin-top: 120px;
+  margin-top: 170px;
   background: url('src/assets/sprites/menu/FoFLogoTransp.png') left center;
   transform: scale(3,3);
   animation: playlogo 0.75s steps(16) infinite;
@@ -57,8 +57,20 @@ img[src=""] { content:url("data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAE
 #menu {
   width: 100%;
   height: 100%;
-  background-image: url('src/assets/maps/tiles/water.png');
-  display: block;
+  background-image: url('src/assets/sprites/menu/main_menu_bg.png');
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  background-size: cover;
+  text-align: center;
+}
+
+.title {
+  font-family: 'Retro';
+  font-size: 60px;
+  top: 0px;
+  width: 432px;
+  position: absolute;
   text-align: center;
 }
 
@@ -76,7 +88,6 @@ button {
 #final_score {
   font-family: 'Retro';
   font-size: 60px;
-  /* margin-left: 60px; */
   top: 130px;
   width: 432px;
 
@@ -88,7 +99,7 @@ button {
 
 
 #button_play {
-  margin-top: 150px;
+  margin-top: 100px;
   background: url('src/assets/sprites/menu/play_button.png') no-repeat;
   background-size: cover;
 }

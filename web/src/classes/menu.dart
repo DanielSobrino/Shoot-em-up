@@ -11,6 +11,8 @@ html.Element playButton = html.document.createElement('button');
 html.Element storeButton = html.document.createElement('button');
 html.Element configButton = html.document.createElement('button');
 
+html.HtmlElement levelSelectTitle = html.document.createElement('div');
+
 html.Element bgImg = html.document.createElement('img');
 html.Element buttonHome = html.document.createElement('button');
 html.Element buttonRetry = html.document.createElement('button');
@@ -62,6 +64,12 @@ class Menu {
     finalScoreText.remove();
   }
 
+  void showLevelSelector() {
+    levelSelectTitle.innerHtml = '<p>Level select</p>';
+    levelSelectTitle.className = 'title';
+    contenedor.append(levelSelectTitle);
+  }
+
   void initMenu() {
     
     //Home menu
@@ -69,7 +77,11 @@ class Menu {
     playButton.id = 'button_play';
     playButton.addEventListener('click', (e) {
       Sound.play(Esounds.BUTTON);
-      launchGame();
+      // launchGame();
+      playButton.remove();
+      storeButton.remove();
+      configButton.remove();      
+      showLevelSelector();
     });
     storeButton.className = 'rect';
     storeButton.id = 'button_store';
@@ -129,15 +141,17 @@ class Menu {
   }
 
   static void menuHandle(Map<String, int> opt) {
-    finalScoreText.innerHtml='<p>FINAL SCORE: ${Game.score}</p>';
+    finalScoreText.innerHtml = '<p>FINAL SCORE: ${Game.score}</p>';
     contenedor.append(finalScoreText);
     contenedor.append(buttonHome);
     switch(opt.keys.first) {
       case 'defeat':
+        Sound.play(Esounds.DEFEAT);
         bgImg.setAttribute('src', 'src/assets/sprites/endgame_menu/defeat_menu.png');
         contenedor.append(buttonRetry);
         break;
       case 'victory':
+        Sound.play(Esounds.VICTORY);
         switch(opt.values.first) {
           case 1:
             bgImg.setAttribute('src', 'src/assets/sprites/endgame_menu/one_star_win_menu.png');
