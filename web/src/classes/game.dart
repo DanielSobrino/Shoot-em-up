@@ -66,7 +66,7 @@ class Game {
   static get mapPos => _mapPos;
 
   //---DEBUG---
-  bool debug = true;
+  bool debug = false;
   bool showHitboxes = false;
   bool pause = false;
 
@@ -118,7 +118,7 @@ class Game {
     
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    // _mapPos = 4500;
+    // _mapPos = 10;
     _mapPos = maxMapPos.toDouble();
     // print(_mapPos); // debug acabar rápido
     //vaciamos la cola de spriteGeneratos
@@ -160,9 +160,9 @@ class Game {
         int stars = efficiency < 0.4 ? 1 : efficiency < 0.9 ? 2 : 3;
         menuCtrl.sink.add({'victory': stars});
 
-        print(efficiency);
-        print('c: $created_enemies');
-        print('d: $defeated_enemies');
+        // print(efficiency);
+        // print('c: $created_enemies');
+        // print('d: $defeated_enemies');
 
       } else {
         menuCtrl.sink.add({'defeat': 1});
