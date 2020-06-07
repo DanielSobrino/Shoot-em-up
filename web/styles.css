@@ -87,6 +87,7 @@ img[src=""] { content:url("data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAE
   z-index: 0;
 }
 
+
 button {
   box-shadow: 0px 0px 0px transparent;
   border: 0px solid transparent;
@@ -120,6 +121,7 @@ button {
   font-family: 'Retro';
   font-size: 30px;
   text-align: center;
+  /* pointer-events: none; */
 }
 
 .levelImg {

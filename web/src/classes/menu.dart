@@ -20,7 +20,8 @@ html.Element configButton = html.document.createElement('button');
 html.HtmlElement returnToMenuButton = html.document.createElement('button'); //también se usará en la tienda y ajustes
 
 html.Element levelBoxDiv = html.document.createElement('div');
-html.HtmlElement levelSelectTitle = html.document.createElement('div');
+html.Element levelSelectTitle = html.document.createElement('div');
+
 
 html.Element bgImg = html.document.createElement('img');
 html.Element buttonHome = html.document.createElement('button');

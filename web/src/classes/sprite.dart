@@ -20,8 +20,7 @@ class Sprite {
   int _frameWidth;
   int _frameDuration;
   Esounds _audio;
-  int _ticksCounter = 0;
-  final int TICKS_ANIMATE = 5;
+  int _storedMillis = 0;
   static Map<String, List<html.CanvasElement>> _frames = {};
   static Map<String, html.ImageElement> _image = {};
   Point _pos = Point(0,0);
@@ -62,6 +61,7 @@ class Sprite {
     _frameDuration = spr_type['frameDuration'] ?? 50;
     _audio = spr_type['audio'];
     spr_type['hitboxes'].forEach((hbox) => setHitbox(Point(hbox[0],hbox[1]), Point(hbox[2], hbox[3])));
+
   }
 
 
@@ -82,7 +82,6 @@ class Sprite {
   bool get onDestroy => _onDestroy;
   Sprite get child => _child;
   int get framesNum => _framesNum;
-  int get ticksCounter => _ticksCounter;
   int get power => _power;
   int get score_value => _score_value;
   bool get showSprite => _showSprite;
@@ -143,10 +142,9 @@ class Sprite {
   void gameHandler(Map<String, dynamic> gameEvent) {
     // print('gameHandler: $gameEvent');
     if(gameEvent.containsKey("newTick")) {
-      _ticksCounter++;
-      // cambio de frame
-      if(_ticksCounter >= TICKS_ANIMATE) {
-        _ticksCounter = 0;
+      int currentMillis = DateTime.now().millisecondsSinceEpoch;
+      if (currentMillis - _storedMillis >= frameDuration) {
+        _storedMillis = currentMillis;
         animate();
       }
       // control de parpadeo
@@ -157,6 +155,11 @@ class Sprite {
         } else {
           stopFlicker();
         }
+      } if (_child != null) { // el hijo sigue al parent
+        child.pos = this.pos - Point(2,0);
+        // child.pos = Point(this.pos.x - this.scale*((child.width - this.width)/2), this.pos.y - this.scale*((child.height - this.height)/2));
+        // child.pos.x = this.pos.x - this.scale*((child.width - this.width)/2);
+        // child.pos.y = this.pos.y - this.scale*((child.height - this.height)/2);
       }
     }
   }

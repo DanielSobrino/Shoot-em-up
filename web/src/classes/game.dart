@@ -11,6 +11,7 @@ import 'spriteGenerator.dart';
 import 'animations.dart';
 import '../assets/maps/level_sprites.dart';
 import 'sound.dart';
+import 'movement.dart';
 
 html.CanvasElement _canvas;
 html.CanvasRenderingContext2D _ctx;
@@ -25,6 +26,7 @@ class Game {
 
   Plane player;
   int player_health;
+  Sprite player_shield;
   List<html.ImageElement> healthbar = [];
 
 
@@ -69,6 +71,7 @@ class Game {
   bool debug = false;
   bool showHitboxes = false;
   bool pause = false;
+
 
   // Game(int level) {
   //   init().then((resp) {
@@ -118,7 +121,7 @@ class Game {
     
     // propiedades para el mapa
     int maxMapPos = levelMap.map_cnv.height - SCREEN_HEIGHT;
-    // _mapPos = 10;
+    // _mapPos = 10; //FIXME:
     _mapPos = maxMapPos.toDouble();
     // print(_mapPos); // debug acabar rápido
     //vaciamos la cola de spriteGeneratos
@@ -199,16 +202,21 @@ class Game {
         break;
       case Esprites.EXPLOSION1:
       case Esprites.EXPLOSION_MEDIUM:
+      case Esprites.HIT_LIGHT:
+      case Esprites.POW_POWERUP:
+      case Esprites.SHIELD:
+      case Esprites.SHIELD_POWERUP:
+      case Esprites.DAMAGE_POWERUP:
         newSpr = Sprite.fromType(type);
         break;
       case Esprites.BULLET1:
-        newSpr = Bullet.fromType(type);
-        break;
       case Esprites.BULLET_ENEM1:
+      case Esprites.BULLET_DMG_BOOST:
         newSpr = Bullet.fromType(type);
         break;
       default: 
         newSpr = Sprite.fromType(type);
+        print('sprite genérico del tipo: $type');
     }
     newSpr.strmSubs = _gameTick.stream;
     await newSpr.complete();
@@ -244,9 +252,58 @@ class Game {
     // listas para los bullets
     List<Sprite> player_bullets = _spr.where((s) => s is Bullet && s.playerBullet).toList();
     List<Sprite> enemy_bullets = _spr.where((s) => s is Bullet && !s.playerBullet).toList();
+    List<Sprite> pow_powerups = _spr.where((s) => s.type == Esprites.POW_POWERUP).toList();
+    List<Sprite> shield_powerups = _spr.where((s) => s.type == Esprites.SHIELD_POWERUP).toList();
+    List<Sprite> damage_powerups = _spr.where((s) => s.type == Esprites.DAMAGE_POWERUP).toList();
     // lista enemigos, debe ser Plane y no ser el Player
     List<Sprite> enemies = _spr.where((s) => s.type != Esprites.PLAYER && s is Plane).toList();
     // enemies.removeWhere((s) => s.type == Esprites.BULLET1 || s.type == Esprites.BULLET_ENEM1);
+    
+    //comprobar colisión jugador con damage powerup
+    for (Sprite damage_pup in damage_powerups) {
+      if (player.collision(damage_pup)) {
+        damage_pup.hit(0);
+        Sound.play(damage_pup.audio);
+        player.shootType = EshootTypes.PLAYER_DMG_BOOST;
+        Future.delayed(Duration(seconds: 8), () => player.shootType = EshootTypes.PLAYER);
+      }
+    }
+    //comprobar colisión jugador con shield powerup
+    for (Sprite shield_pup in shield_powerups) {
+      if (player.collision(shield_pup)) {
+        if (player_shield != null) {
+          player_shield.hit(0);
+          player_shield = null;
+        }
+        shield_pup.hit(0);
+        Sound.play(shield_pup.audio);
+        shieldPlayer();
+      }
+    }
+    //comprobar colisión jugador con pow
+    for (Sprite pow in pow_powerups) {
+      if (player.collision(pow)) {
+        enemies.forEach((e) {
+          pw_left = e.power - pow.power;
+          if(pw_left <= 0) {
+            if (e.frameWidth < BIG_PLANE_WIDTH) {
+              _explode(e, Esprites.EXPLOSION1, destroy: true, destroyInMillis: 300);
+            } else {
+              _explode(e, Esprites.EXPLOSION_MEDIUM, destroy: true, destroyInMillis: 450);
+            }
+            defeated_enemies++;
+            score += e.score_value;
+          } else {
+            e.power = pw_left;
+            e.setFlicker();
+          }
+        });
+        score += pow.score_value;
+        Sound.play(pow.audio);
+        pow.hit(0);
+      }
+
+    }
 
     // comprobamos las colisiones de bullets del player y la colisión del player con otro enemigo
     for(Sprite enemy in enemies) {
@@ -257,12 +314,15 @@ class Game {
           bullet.hit(0);
           _explode(bullet, Esprites.HIT_LIGHT);
           if(pw_left <= 0) {
+            Random pup_drop_chance = Random();
+            if (pup_drop_chance.nextDouble() < POWER_UP_DROP_ROBABILITY) {
+              dropPowerUp(enemy);
+            }
             if (enemy.frameWidth < BIG_PLANE_WIDTH) {
               _explode(enemy, Esprites.EXPLOSION1, destroy: true, destroyInMillis: 300);
             } else {
               _explode(enemy, Esprites.EXPLOSION_MEDIUM, destroy: true, destroyInMillis: 450);
             }
-            
             // Añadir score del enemigo al score global
             score += enemy.score_value;
             defeated_enemies++;
@@ -282,40 +342,66 @@ class Game {
         if (player_health <= 2) {
           Sound.play(Esounds.PLAYER_HURT);
           player_health = 0; // para la healthbar
-          print(player_health);
+          // print(player_health);
           _explode(player, Esprites.EXPLOSION1, destroy: true);
           winGame = false;
           Future.delayed(Duration(milliseconds: 800), gameOver);
         } else {
-          print('choque aviones');
+          // print('choque aviones');
           Sound.play(Esounds.PLAYER_HURT);
           player_health = player_health - 2; // el jugador recibe 2 de daño al colisionar con un enemigo
-          print(player_health);
+          // print(player_health);
           player.setFlicker(ticks: 40, invulnerable: true);
         }
       }
     }
     
-    // comprobamos si el player choca con una bala enemiga
     for (Bullet bullet in enemy_bullets) {
-      if (!player.invulnerability && player.collision(bullet)) {
+    // comprobación bala contra escudo
+      if (player_shield != null) {
+        if (player_shield.collision(bullet)) {
+          bullet.hit(0);
+        }
+      } 
+      // comprobamos si el player choca con una bala enemiga
+      else if (!player.invulnerability && player.collision(bullet)) {
         bullet.hit(0);
         _explode(bullet, Esprites.HIT_LIGHT);
         if (player_health <= 1) {
           Sound.play(Esounds.PLAYER_HURT);
           player_health = 0; // para la healthbar
-          print(player_health);
+          // print(player_health);
           _explode(player, Esprites.EXPLOSION1, destroy: true);
           winGame = false;
           Future.delayed(Duration(milliseconds: 800), gameOver);
         } else {
           Sound.play(Esounds.PLAYER_HURT);
           player_health--; // el jugador recibe 1 de daño al colisionar con una bala
-          print(player_health);
+          // print(player_health);
           player.setFlicker(invulnerable: true); 
         }
       }
     }
+
+  }
+
+  dropPowerUp(Sprite enemy) async {
+    Random rng = Random();
+    double random_number = rng.nextDouble();
+    Esprites power_up_type;
+    if (random_number < 0.333) {
+      power_up_type = Esprites.POW_POWERUP;
+      print('dropeo pow');
+    } else if (random_number < 0.666) {
+      power_up_type = Esprites.DAMAGE_POWERUP;
+      print('dropeo dmg');
+    } else {
+      power_up_type = Esprites.SHIELD_POWERUP;
+      print('dropeo shield');
+    }
+    // Sprite power_up = await loadSprite(power_up_type);
+    SpriteGenerator(_mapPos.toInt(), power_up_type, Point(enemy.pos.x.toInt()+5, enemy.pos.y.toInt()+5), movement: Movement(type: EmoveTypes.GROUNDED));
+    //SpriteGenerator(trigger_pos, spriteType, spawn_pos, {quantity, triggerOffset movement: Movement({EmoveTypes type, desp_x, desp_y, sin_ampl, dsin_res, max_x, max_y})});
 
   }
 
@@ -327,8 +413,11 @@ class Game {
       Sprite enemy = await loadSprite(currentGen.spriteType);
       enemy.pos = currentGen.pos;
       // enemy.direct = Point(0.5, 1); //
-      enemies.add(enemy);
-      created_enemies++;
+      if (enemy.type != Esprites.POW_POWERUP) {
+        enemies.add(enemy);
+        // print(enemy);
+        created_enemies++;
+      }
       _waitingSpr.add(enemy);
       if (currentGen.movement != null) {
         currentGen.movement.startMove(enemy, mapPos: _mapPos);
@@ -358,6 +447,22 @@ class Game {
         newSpr.hit(newSpr.frameDuration * newSpr.framesNum); // Se programa la destrucción de la explosión
       });
     });
+  }
+
+  void shieldPlayer() async {
+    Sprite shield = await loadSprite(Esprites.SHIELD);
+      Point shieldPos = player.pos;
+      double shieldScale = player.scale;
+      player.child = shield;
+      await shield.complete();
+      shield.pos = shieldPos;
+      shield.scale = shieldScale;
+      _waitingSpr.add(shield);
+      player_shield = shield;
+      Future.delayed(Duration(milliseconds: shield.frameDuration * (shield.framesNum-1)), () {
+        shield.hit(0);   
+        player_shield = null;
+      });
   }
 
   void draw() {
@@ -426,8 +531,12 @@ class Game {
       case html.KeyCode.CTRL:
         pressed[e.keyCode] = true;
         break;
+      // case html.KeyCode.S:
+      //   if (player_shield == null) {
+      //     shieldPlayer();
+      //   }
+      //   break;
     }
-
   }
 
   void kybControl() {

@@ -30,6 +30,8 @@ class Bullet extends Sprite {
 
   @override
   void gameHandler(Map<String, dynamic> gameEvent) {
+    super.gameHandler(gameEvent);
+
     if(gameEvent.containsKey("newTick")) {
       travel();
     }

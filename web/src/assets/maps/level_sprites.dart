@@ -9,6 +9,12 @@ void prepareSprites(int level) {
   //----------------------------------------------------------------------------------
   switch (level) {
     case 1:
+      // SpriteGenerator(1950, Esprites.POW_POWERUP, Point(300, -50), quantity: 1, movement: Movement(type: EmoveTypes.GROUNDED));
+      // SpriteGenerator(1950, Esprites.SHIELD_POWERUP, Point(180, -50), quantity: 1, movement: Movement(type: EmoveTypes.GROUNDED));
+      // SpriteGenerator(1950, Esprites.DAMAGE_POWERUP, Point(60, -50), quantity: 1, movement: Movement(type: EmoveTypes.GROUNDED));
+      // SpriteGenerator(1900, Esprites.SHIELD_POWERUP, Point(180, -50), quantity: 1, movement: Movement(type: EmoveTypes.GROUNDED));
+
+      // --- arriba prueba power-ups
       SpriteGenerator(1850, Esprites.BASIC_PLANE, Point(180, -50), quantity: 4, triggerOffset: -50, movement: Movement(desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
       SpriteGenerator(1650, Esprites.BIROTOR_PLANE, Point(60, -70), quantity: 2, triggerOffset: -150, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
       SpriteGenerator(1500, Esprites.BACKW_PLANE, Point(250, -50), quantity: 3, triggerOffset: -100, movement: Movement(desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 60, sin_res: 0.02));
@@ -24,17 +30,17 @@ void prepareSprites(int level) {
       break;
       //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     case 2:
-      SpriteGenerator(5200, Esprites.BASIC_PLANE, Point(180, -50), quantity: 15, triggerOffset: -100, movement: Movement(desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
-      SpriteGenerator(5000, Esprites.BIROTOR_PLANE, Point(60, -70), quantity: 3, triggerOffset: -600, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
-      SpriteGenerator(5000, Esprites.BIROTOR_PLANE, Point(300, -70), quantity: 3, triggerOffset: -600, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
-      SpriteGenerator(4300, Esprites.BASIC_PLANE, Point(440, 80), quantity: 6, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_x: -0.7));
-      SpriteGenerator(4200, Esprites.BASIC_PLANE, Point(-50, 80), quantity: 6, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_x: 0.7));
-      SpriteGenerator(3300, Esprites.BASIC_PLANE, Point(180, -50), quantity: 5, triggerOffset: -170, movement: Movement(type: EmoveTypes.ZIGZAG, max_x: 120));
-      SpriteGenerator(3300, Esprites.BACKW_PLANE, Point(300, -50), quantity: 7, triggerOffset: -150, movement: Movement(type: EmoveTypes.ZIGZAG, max_x: 80));
-      SpriteGenerator(3300, Esprites.BACKW_PLANE, Point(60, -50), quantity: 7, triggerOffset: -150, movement: Movement(type: EmoveTypes.ZIGZAG, max_x: 80));
-      SpriteGenerator(2800, Esprites.BIROTOR_PLANE, Point(230, -70), quantity: 3, triggerOffset: -200, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
-      SpriteGenerator(2400, Esprites.BACKW_PLANE, Point(300, 960), quantity: 3, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_y: -0.8));
-      SpriteGenerator(2200, Esprites.BACKW_PLANE, Point(60, 960), quantity: 3, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_y: -0.8));
+      SpriteGenerator(3300, Esprites.BASIC_PLANE, Point(180, -50), quantity: 15, triggerOffset: -100, movement: Movement(desp_y: 0.5, type: EmoveTypes.WAVE, sin_ampl: 170, sin_res: 0.02));
+      SpriteGenerator(3100, Esprites.BIROTOR_PLANE, Point(60, -70), quantity: 3, triggerOffset: -600, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
+      SpriteGenerator(3100, Esprites.BIROTOR_PLANE, Point(300, -70), quantity: 3, triggerOffset: -600, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
+      SpriteGenerator(2400, Esprites.BASIC_PLANE, Point(440, 80), quantity: 6, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_x: -0.7));
+      SpriteGenerator(2300, Esprites.BASIC_PLANE, Point(-50, 80), quantity: 6, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_x: 0.7));
+      SpriteGenerator(1400, Esprites.BASIC_PLANE, Point(180, -50), quantity: 5, triggerOffset: -170, movement: Movement(type: EmoveTypes.ZIGZAG, max_x: 120));
+      SpriteGenerator(1400, Esprites.BACKW_PLANE, Point(300, -50), quantity: 7, triggerOffset: -150, movement: Movement(type: EmoveTypes.ZIGZAG, max_x: 80));
+      SpriteGenerator(1400, Esprites.BACKW_PLANE, Point(60, -50), quantity: 7, triggerOffset: -150, movement: Movement(type: EmoveTypes.ZIGZAG, max_x: 80));
+      SpriteGenerator(900, Esprites.BIROTOR_PLANE, Point(230, -70), quantity: 3, triggerOffset: -200, movement: Movement(type: EmoveTypes.LINEAR, desp_y: 0.8));
+      SpriteGenerator(500, Esprites.BACKW_PLANE, Point(300, 960), quantity: 3, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_y: -0.8));
+      SpriteGenerator(300, Esprites.BACKW_PLANE, Point(60, 960), quantity: 3, triggerOffset: -100, movement: Movement(type: EmoveTypes.LINEAR, desp_y: -0.8));
 
 
       break;

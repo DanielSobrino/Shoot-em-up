@@ -11,7 +11,10 @@ Map<Esounds, String> soundFiles = {
   Esounds.TAKE_OFF: './src/assets/audio/effects/take_off.mp3',
   Esounds.PLAYER_SHOT: './src/assets/audio/shooting/player_shot.mp3',
   Esounds.EXPLOSION1: './src/assets/audio/explosions/explosion.mp3',
-  Esounds.EXPLOSION_MEDIUM: './src/assets/audio/explosions/explosion_medium.mp3'
+  Esounds.EXPLOSION_MEDIUM: './src/assets/audio/explosions/explosion_medium.mp3',
+  Esounds.POW_PICKUP: './src/assets/audio/powerup_pickup/pow_pickup.mp3',
+  Esounds.SHIELD_PICKUP: './src/assets/audio/powerup_pickup/shielded.mp3',
+  Esounds.DMG_PUP_PICKUP: './src/assets/audio/powerup_pickup/dmg_powerup.mp3',
 };
 
 

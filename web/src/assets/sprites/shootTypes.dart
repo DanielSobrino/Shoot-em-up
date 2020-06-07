@@ -16,6 +16,22 @@ Map<EshootTypes, Map<String, dynamic>> shootTypes = {
     "shootRate": null,
     "playerBullet": true
   },
+  EshootTypes.PLAYER_DMG_BOOST: {
+    "bulletType": Esprites.BULLET_DMG_BOOST,
+    "direction": [
+      Point(-0.2,-9),
+      Point(0,-10),
+      Point(0.2,-9)
+    ],
+    // mover un px a la izquierda en gimp
+    "gunPos": [
+      Point(8,21),
+      Point(31,21),
+      Point(54,21)
+    ],
+    "shootRate": null,
+    "playerBullet": true
+  },
   EshootTypes.PLAYER_F: {
     "bulletType": Esprites.BULLET1,
     "direction": [
@@ -24,8 +40,24 @@ Map<EshootTypes, Map<String, dynamic>> shootTypes = {
     ],
     // mover un px a la izquierda en gimp
     "gunPos": [
-      Point(8,21),
-      Point(54,21)
+      Point(8,40),
+      Point(54,40)
+    ],
+    "shootRate": null,
+    "playerBullet": true
+  },
+  EshootTypes.PLAYER_DMG_BOOST_F: {
+    "bulletType": Esprites.BULLET_DMG_BOOST,
+    "direction": [
+      Point(0.2,9),
+      Point(0,10),
+      Point(-0.2,9)
+    ],
+    // mover un px a la izquierda en gimp
+    "gunPos": [
+      Point(8,40),
+      Point(31,40),
+      Point(54,40)
     ],
     "shootRate": null,
     "playerBullet": true

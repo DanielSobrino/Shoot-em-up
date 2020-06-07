@@ -40,6 +40,11 @@ class Plane extends Sprite with Shoot {
   Esprites get bulletType => _bulletType;
   bool get playerBullet => _playerBullet;
 
+  set shootType(EshootTypes st){
+    _shootType = st;
+    prepareShoot();
+  }
+
   // para poder disparar el plane debe estar completo
   void prepareShoot() {
     // sólo se asignan las propiedades si existe shootType
@@ -62,10 +67,10 @@ class Plane extends Sprite with Shoot {
 
   void loopShoot() async {
     int shotDelay = _shootRate + Random().nextInt(_randomRate);
+    await Future.delayed(Duration(milliseconds: shotDelay));
     if(!this.onDestroy) {
       if(!_gamePaused) {
         planeShoot();
-        await Future.delayed(Duration(milliseconds: shotDelay));
       }
       loopShoot();
     }
@@ -80,11 +85,11 @@ class Plane extends Sprite with Shoot {
     super.gameHandler(gameEvent);
 
     if(gameEvent.containsKey("pauseOn")) {
-      print('activada la pausa en plane');
+      // print('activada la pausa en plane');
       this._gamePaused = true;
     }
     if(gameEvent.containsKey("pauseOff")) {
-      print('desactivada la pausa en plane');
+      // print('desactivada la pausa en plane');
       this._gamePaused = false;
     }
     

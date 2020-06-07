@@ -35,7 +35,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/plane1_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [12,2,20,28],
       [2,5,30,13]
@@ -51,7 +50,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/plane1_flipped_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [12,1,20,27],
       [2,16,30,24]
@@ -68,7 +66,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/plane_turret_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [12,2,20,28],
       [2,5,30,13]
@@ -81,7 +78,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/plane_turret_flipped_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [12,1,20,27],
       [2,16,30,24]
@@ -120,7 +116,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/birotor_plane_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [2,7,46,15],
       [11,4,37,39],
@@ -134,7 +129,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/birotor_plane_flipped_spritesheet.png",
     "frames": 4,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [2,25,46,33],
       [11,1,37,36],
@@ -149,7 +143,6 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
     "fileName": "planes/fighter_jet_spritesheet.png",
     "frames": 2,
     "scale": 1.5,
-    "frameDuration": 50,
     "hitboxes": [
       [0,14,31,20],
       [6,27,25,31],
@@ -199,22 +192,78 @@ Map<Esprites, Map<String, dynamic>> spriteTypes = {
   Esprites.BULLET1: {
     "fileName": "bullets/bullet1_spritesheet.png",
     "frames": 2,
-    "frameDuration": 100,
     "hitboxes": [
       [0,1,3,5]
     ],
     "power": 1
   },
-
+  Esprites.BULLET_DMG_BOOST: {
+    "fileName": "bullets/damage_boost_player_bullet_spritesheet.png",
+    "frames": 5,
+    "scale": 1,
+    "hitboxes": [
+      [0,0,9,9]
+    ],
+    "power": 2
+  },
   Esprites.BULLET_ENEM1: {
     "fileName": "bullets/bullet_enem_spritesheet.png",
-    "frames": 2,
+    "frames": 6,
     "scale": 1,
     "frameDuration": 100,
     "hitboxes": [
       [0,0,9,9]
     ],
     "power": 1
+  },
+
+  Esprites.POW_POWERUP: {
+    "fileName": "pickups/pow_powerup_spritesheet.png",
+    "frames": 7,
+    "scale": 1,
+    "frameDuration": 100,
+    "hitboxes": [
+      [0,0,30,30]
+    ],
+    "audio": Esounds.POW_PICKUP,
+    "score": 100,
+    "power": 3
+  },
+  Esprites.SHIELD: {
+    "fileName": "p_up_effects/shield_spritesheet_transp42.png",
+    "frames": 7,
+    "scale": 1,
+    "frameDuration": 1000,
+    "hitboxes": [
+      [29,1,40,68],
+      [1,29,68,40],
+      [10,10,59,59],
+      [18,5,51,11],
+      [18,58,51,64],
+      [18,58,51,64],
+      [5,18,14,51],
+      [53,18,62,51]
+    ],
+  },
+  Esprites.SHIELD_POWERUP: {
+    "fileName": "pickups/shield_powerup_spritesheet.png",
+    "frames": 7,
+    "scale": 1,
+    "frameDuration": 100,
+    "hitboxes": [
+      [2,2,29,29]
+    ],
+    "audio": Esounds.SHIELD_PICKUP,
+  },
+  Esprites.DAMAGE_POWERUP: {
+    "fileName": "pickups/dmg_powerup_spritesheet.png",
+    "frames": 8,
+    "scale": 1,
+    "frameDuration": 100,
+    "hitboxes": [
+      [2,2,29,29]
+    ],
+    "audio": Esounds.DMG_PUP_PICKUP,
   }
 
 };
